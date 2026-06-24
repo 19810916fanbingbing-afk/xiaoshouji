@@ -1,0 +1,3689 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Hello Kitty 桌面</title>
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <style>
+        /* ===== 基础样式 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        .password-body {
+            background-image: url('https://img.heliar.top/file/1780826464351_IMG_9511.jpeg');
+        }
+
+        .home-body {
+            background-image: url('https://img.heliar.top/file/1780826455991_IMG_9510.jpeg');
+        }
+
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .page.hidden {
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+        }
+
+        #password-page {
+            z-index: 100;
+        }
+
+        .dot {
+            transition: all 0.2s ease;
+        }
+
+        .dot.filled {
+            background-color: #555;
+            transform: scale(1.1);
+        }
+
+        .key {
+            transition: all 0.15s ease;
+            user-select: none;
+            -webkit-user-select: none;
+            background-color: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(2px);
+        }
+
+        .key:active {
+            transform: scale(0.95);
+            background-color: rgba(255, 255, 255, 1) !important;
+        }
+
+        .success-toast {
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            background-color: #ff85a2 !important;
+        }
+
+        .success-toast.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .app-icon {
+            transition: all 0.15s ease;
+        }
+
+        .app-icon:active {
+            transform: scale(0.9);
+        }
+
+        .app-page {
+            background-color: #fff;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, #ffb6c1 0%, #ffc0cb 100%);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+
+        .app-header button {
+            color: white;
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .app-header h1 {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .input-field {
+            border: 1px solid #d1d5db;
+            transition: all 0.2s ease;
+            border-radius: 8px;
+            padding: 8px 12px;
+            width: 100%;
+            font-size: 14px;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff85a2 0%, #ff69b4 100%);
+            transition: all 0.2s ease;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background-color: #f3f4f6;
+            color: #374151;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e5e7eb;
+        }
+
+        .btn-secondary:active {
+            transform: scale(0.98);
+            background-color: #d1d5db;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 300;
+        }
+
+        .modal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+
+        .wechat-tab-bar {
+            display: flex;
+            background-color: #f8f8f8;
+            border-top: 1px solid #eee;
+            flex-shrink: 0;
+        }
+
+        .wechat-tab {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 0;
+            color: #999;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .wechat-tab.active {
+            color: #ff69b4;
+        }
+
+        .wechat-tab svg {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 4px;
+        }
+
+        .wechat-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .chat-item {
+            display: flex;
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+        }
+
+        .chat-item:active {
+            background-color: #f5f5f5;
+        }
+
+        .chat-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            margin-right: 12px;
+            object-fit: cover;
+        }
+
+        .chat-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .chat-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .chat-last-message {
+            font-size: 14px;
+            color: #999;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .contact-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            margin-right: 12px;
+            object-fit: cover;
+        }
+
+        .contact-name {
+            flex: 1;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .contact-edit {
+            color: #ff69b4;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .chat-page {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background-color: #f5f5f5;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 10px 14px;
+            border-radius: 18px;
+            margin-bottom: 8px;
+            font-size: 16px;
+            line-height: 1.4;
+            background-color: white;
+            color: black;
+            word-wrap: break-word;
+        }
+
+        .message-left {
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .message-right {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .message-right .message-bubble {
+            background-color: #ff85a2;
+            color: white;
+        }
+
+        .message-blocked {
+            opacity: 0.5;
+        }
+
+        .chat-input-bar {
+            display: flex;
+            padding: 8px 12px;
+            background-color: white;
+            border-top: 1px solid #eee;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 16px;
+            margin: 0 8px;
+            outline: none;
+        }
+
+        .chat-input-bar button {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .moment-item {
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .moment-header {
+            display: flex;
+            margin-bottom: 12px;
+        }
+
+        .moment-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            margin-right: 12px;
+            object-fit: cover;
+        }
+
+        .moment-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .moment-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .moment-content {
+            font-size: 16px;
+            line-height: 1.5;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .transfer-cover {
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        @keyframes shake {
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+            10%,
+            30%,
+            50%,
+            70%,
+            90% {
+                transform: translateX(-5px);
+            }
+            20%,
+            40%,
+            60%,
+            80% {
+                transform: translateX(5px);
+            }
+        }
+
+        .shop-card:active {
+            transform: scale(0.98);
+        }
+
+        .product-card:active {
+            transform: scale(0.98);
+        }
+
+        .delivery-progress-step {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .delivery-progress-step:last-child {
+            border-bottom: none;
+        }
+        .delivery-progress-step .step-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .delivery-progress-step .step-dot.done {
+            background-color: #52c41a;
+        }
+        .delivery-progress-step .step-dot.active {
+            background-color: #ff69b4;
+            animation: pulse-dot 1s infinite;
+        }
+        .delivery-progress-step .step-dot.pending {
+            background-color: #d9d9d9;
+        }
+
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.3);
+            }
+        }
+
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* 美化设置中的额外样式 */
+        #wallpaper-preview {
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+        }
+
+        #icon-preview img {
+            object-fit: cover;
+            border: 1px solid #e5e7eb;
+        }
+
+        .select-all {
+            user-select: all;
+            -webkit-user-select: all;
+        }
+
+        /* 转账卡片样式 */
+        .transfer-card {
+            background: #fafafa;
+            border-radius: 12px;
+            padding: 12px 16px;
+            border: 1px solid #e5e7eb;
+            display: inline-block;
+            min-width: 180px;
+        }
+        .transfer-card .amount {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ff69b4;
+        }
+        .transfer-card .note {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+        .transfer-card .status {
+            font-size: 12px;
+            color: #52c41a;
+            margin-top: 4px;
+        }
+        .message-right .transfer-card {
+            background: #ff85a2;
+            border-color: #ff69b4;
+        }
+        .message-right .transfer-card .amount {
+            color: #fff;
+        }
+        .message-right .transfer-card .note,
+        .message-right .transfer-card .status {
+            color: #f0f0f0;
+        }
+    </style>
+</head>
+<body class="password-body">
+    <!-- 全局提示 -->
+    <div id="toast" class="toast"></div>
+
+    <!-- 密码解锁页面 -->
+    <div id="password-page" class="page">
+        <div class="min-h-screen flex flex-col items-center justify-center px-8">
+            <h1 class="text-2xl font-medium text-gray-700 mb-8">输入密码</h1>
+            <div class="flex space-x-6 mb-16">
+                <div class="dot w-4 h-4 rounded-full bg-gray-400"></div>
+                <div class="dot w-4 h-4 rounded-full bg-gray-400"></div>
+                <div class="dot w-4 h-4 rounded-full bg-gray-400"></div>
+                <div class="dot w-4 h-4 rounded-full bg-gray-400"></div>
+                <div class="dot w-4 h-4 rounded-full bg-gray-400"></div>
+                <div class="dot w-4 h-4 rounded-full bg-gray-400"></div>
+            </div>
+            <div class="grid grid-cols-3 gap-6 w-full max-w-sm">
+                <button class="key w-24 h-24 rounded-full text-3xl font-light text-gray-700" data-value="1">1</button>
+                <button class="key w-24 h-24 rounded-full text-3xl font-light text-gray-700" data-value="2">2</button>
+                <button class="key w-24 h-24 rounded-full text-3xl font-light text-gray-700" data-value="3">3</button>
+                <button class="key w-24 h-24 rounded-full text-3xl font-light text-gray-700" data-value="4">4</button>
+                <button class="key w-24 h-24 rounded-full text-3xl font-light text-gray-700" data-value="5">5</button>
+                <button class="key w-24 h-24 rounded-full text-3xl font-light text-gray-700" data-value="6">6</button>
+                <button class="key w-24 h-24 rounded-full text-3xl font-light text-gray-700" data-value="7">7</button>
+                <button class="key w-24 h-24 rounded-full text-3xl font-light text-gray-700" data-value="8">8</button>
+                <button class="key w-24 h-24 rounded-full text-3xl font-light text-gray-700" data-value="9">9</button>
+                <div class="w-24 h-24"></div>
+                <button class="key w-24 h-24 rounded-full text-3xl font-light text-gray-700" data-value="0">0</button>
+                <button class="key w-24 h-24 rounded-full text-3xl font-light text-gray-700" data-value="backspace">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="success-toast" class="success-toast fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white px-8 py-4 rounded-full text-lg font-medium shadow-lg">
+                解锁成功
+            </div>
+        </div>
+    </div>
+
+    <!-- 主屏幕 -->
+    <div id="home-page" class="page hidden">
+        <div class="min-h-screen flex flex-col">
+            <div class="h-12"></div>
+            <div class="flex-1 p-6">
+                <div class="grid grid-cols-4 gap-6">
+                    <div class="app-icon flex flex-col items-center" onclick="openSettings()">
+                        <img src="https://img.heliar.top/file/1780827971214_IMG_9513.jpeg" alt="设置" class="w-16 h-16 rounded-xl shadow-md">
+                        <span class="text-xs text-gray-700 mt-2">设置</span>
+                    </div>
+                    <div class="app-icon flex flex-col items-center" onclick="openWechat()">
+                        <img src="https://img.heliar.top/file/1780829322476_IMG_9514.jpeg" alt="微信" class="w-16 h-16 rounded-xl shadow-md">
+                        <span class="text-xs text-gray-700 mt-2">微信</span>
+                    </div>
+                    <div class="app-icon flex flex-col items-center" onclick="openTakeout()">
+                        <img src="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEV4rVqOTypArdsjUADzH66g1ijMDmgZQACRykAAqOTyVXI17C0F_IaSDwE.jpeg" alt="外卖" class="w-16 h-16 rounded-xl shadow-md">
+                        <span class="text-xs text-gray-700 mt-2">外卖</span>
+                    </div>
+                    <div class="app-icon flex flex-col items-center" onclick="openPhoneCheck()">
+                        <img src="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEV6H1qOgyRWXvSSoJuBP4Bqhfw0fSVJAACLyEAAvQD0VWnEx-Q3iJIIjwE.jpeg" alt="查手机" class="w-16 h-16 rounded-xl shadow-md">
+                        <span class="text-xs text-gray-700 mt-2">查手机</span>
+                    </div>
+                </div>
+            </div>
+            <div class="h-24"></div>
+        </div>
+    </div>
+
+    <!-- 设置页面 -->
+    <div id="settings-page" class="page hidden app-page">
+        <div class="app-header">
+            <button onclick="goBackToHome()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <h1>设置</h1>
+            <div></div>
+        </div>
+        <div class="p-4 flex-1 overflow-y-auto">
+            <h2 class="text-lg font-bold text-gray-800 mb-4">API接入</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">API URL 地址</label>
+                    <input type="text" id="api-url" class="input-field" placeholder="例如：https://api.example.com/v1">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">API 密钥</label>
+                    <input type="password" id="api-key" class="input-field" placeholder="输入你的API密钥">
+                </div>
+                <button onclick="fetchModels()" class="btn-primary w-full">拉取模型</button>
+                <div id="model-select-container" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">选择模型</label>
+                    <select id="model-select" class="input-field">
+                        <option value="">请先拉取模型</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="saveConfig()" class="btn-secondary">保存</button>
+                    <button onclick="showPresetModal()" class="btn-secondary">保存预设</button>
+                </div>
+                <button onclick="testApi()" class="btn-primary w-full">测试API连接</button>
+                <div id="test-result" class="hidden p-4 rounded-lg bg-gray-100">
+                    <h3 class="font-medium text-gray-800 mb-2">测试结果</h3>
+                    <pre id="test-result-content" class="text-sm text-gray-600 whitespace-pre-wrap"></pre>
+                </div>
+            </div>
+
+            <!-- ====== 美化设置 ====== -->
+            <div class="mt-6 border-t pt-4">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">🎨 美化设置</h3>
+                <!-- 壁纸 -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">壁纸图片</label>
+                    <div class="flex items-center space-x-2 mb-2">
+                        <input type="file" accept="image/*" id="wallpaper-file" class="hidden" onchange="handleWallpaperFile(this)">
+                        <button onclick="document.getElementById('wallpaper-file').click()" class="btn-secondary text-sm px-3 py-2">选择文件</button>
+                        <span class="text-xs text-gray-500">或输入URL</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <input type="url" id="wallpaper-url" class="input-field flex-1" placeholder="输入图片URL...">
+                        <button onclick="saveWallpaper()" class="btn-primary px-3 py-2">保存壁纸</button>
+                    </div>
+                    <div id="wallpaper-preview" class="mt-2 w-full h-20 rounded-lg bg-cover bg-center border" style="display:none;"></div>
+                </div>
+                <!-- 图标 -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">软件图标图片（替换所有app图标）</label>
+                    <div class="flex items-center space-x-2 mb-2">
+                        <input type="file" accept="image/*" id="icon-file" class="hidden" onchange="handleIconFile(this)">
+                        <button onclick="document.getElementById('icon-file').click()" class="btn-secondary text-sm px-3 py-2">选择文件</button>
+                        <span class="text-xs text-gray-500">或输入URL</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <input type="url" id="icon-url" class="input-field flex-1" placeholder="输入图标URL...">
+                        <button onclick="saveIcon()" class="btn-primary px-3 py-2">保存图标</button>
+                    </div>
+                    <div id="icon-preview" class="mt-2 flex space-x-2"></div>
+                </div>
+                <!-- CSS美化 -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">自定义CSS美化代码</label>
+                    <textarea id="custom-css-editor" rows="8" class="input-field w-full font-mono text-sm" placeholder="在此粘贴CSS代码..."></textarea>
+                    <div class="flex space-x-2 mt-2">
+                        <button onclick="applyCustomCSS()" class="btn-primary px-3 py-2">保存并应用</button>
+                        <button onclick="saveCSSPreset()" class="btn-secondary px-3 py-2">保存预设</button>
+                    </div>
+                    <div class="mt-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">选择预设</label>
+                        <select id="css-preset-select" class="input-field w-full" onchange="loadCSSPreset(this.value)">
+                            <option value="">-- 选择预设 --</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- AI模板 -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+                    <h4 class="font-bold text-blue-800 mb-2">💡 AI生成CSS美化代码模板</h4>
+                    <p class="text-sm text-blue-700 mb-2">将以下提示词发给AI（如DeepSeek），即可获得可直接粘贴的CSS美化代码：</p>
+                    <div class="bg-white p-3 rounded border text-xs font-mono whitespace-pre-wrap select-all cursor-pointer" onclick="copyTemplateText(this)" title="点击复制">
+                        请为一个手机模拟器应用生成CSS美化代码，要求覆盖以下内容：壁纸（body背景）、软件图标（.app-icon img）、聊天页面（聊天输入框、消息气泡、联系人列表）、外卖页面（商家卡片、商品卡片）、设置页面、查手机页面。风格：[这里描述你想要的风格，例如：暗黑科技风、粉色可爱风、极简白色等]。颜色主题：[主色、辅色]。请输出纯CSS代码，不要任何解释。
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">点击上方文本框可复制模板，替换方括号内的描述即可。</p>
+                </div>
+                <!-- 预置CSS预设示例 -->
+                <div class="mt-4 p-3 bg-gray-50 rounded-lg border">
+                    <h5 class="font-medium text-gray-700 mb-2">📌 快速预设示例</h5>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="loadExampleCSS('pink')" class="btn-secondary text-xs px-3 py-1">🌸 粉色可爱</button>
+                        <button onclick="loadExampleCSS('dark')" class="btn-secondary text-xs px-3 py-1">🌙 暗黑科技</button>
+                        <button onclick="loadExampleCSS('minimal')" class="btn-secondary text-xs px-3 py-1">⬜ 极简白</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== 数据备份与恢复 ====== -->
+            <div class="mt-6 border-t pt-4">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">💾 数据备份与恢复</h3>
+                <p class="text-sm text-gray-600 mb-3">导出所有数据（联系人、聊天记录、钱包、美化设置等）为JSON文件，或从备份文件恢复。</p>
+                <div class="flex space-x-3">
+                    <button onclick="exportData()" class="btn-primary px-4 py-2 flex-1">导出数据</button>
+                    <button onclick="document.getElementById('import-file').click()" class="btn-secondary px-4 py-2 flex-1">导入数据</button>
+                    <input type="file" id="import-file" accept=".json" class="hidden" onchange="importData(event)">
+                </div>
+                <div id="backup-status" class="mt-2 text-sm text-gray-500"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 微信页面 -->
+    <div id="wechat-page" class="page hidden app-page">
+        <div class="app-header" id="wechat-header">
+            <button onclick="goBackToHome()" id="wechat-back-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <h1 id="wechat-title">微信</h1>
+            <button onclick="showWechatMenu()" id="wechat-menu-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v.01M12 12v.01M12 18v.01" />
+                </svg>
+            </button>
+        </div>
+        <div class="wechat-content" id="wechat-content">
+            <div id="chat-list-tab" class="wechat-tab-content">
+                <div id="chat-list" class="divide-y divide-gray-100"></div>
+            </div>
+            <div id="contacts-tab" class="wechat-tab-content hidden">
+                <div class="p-4">
+                    <button onclick="showAddContactModal()" class="btn-primary w-full mb-4">+ 添加好友</button>
+                    <div id="contacts-list" class="divide-y divide-gray-100"></div>
+                </div>
+            </div>
+            <div id="discover-tab" class="wechat-tab-content hidden">
+                <div class="p-4">
+                    <button onclick="showMomentMenu()" class="btn-primary w-full mb-4">+ 朋友圈</button>
+                    <div id="moments-list"></div>
+                </div>
+            </div>
+            <div id="profile-tab" class="wechat-tab-content hidden">
+                <div class="p-4">
+                    <div class="flex items-center mb-6 p-4 bg-gray-50 rounded-lg">
+                        <img id="user-avatar" src="https://img.heliar.top/file/1780829322476_IMG_9514.jpeg" alt="头像" class="w-16 h-16 rounded-lg mr-4 object-cover">
+                        <div>
+                            <h2 id="user-name" class="text-xl font-bold text-gray-800">用户</h2>
+                            <button onclick="showEditProfileModal()" class="text-sm text-pink-500">编辑资料</button>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <button onclick="showMaskPage()" class="w-full p-4 bg-gray-50 rounded-lg text-left flex justify-between items-center">
+                            <span class="font-medium text-gray-800">面具</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div>
+                        <button onclick="showWalletPage()" class="w-full p-4 bg-gray-50 rounded-lg text-left flex justify-between items-center">
+                            <span class="font-medium text-gray-800">钱包</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="mt-4">
+                        <button onclick="showOrderDetail()" class="w-full p-4 bg-gray-50 rounded-lg text-left flex justify-between items-center">
+                            <span class="font-medium text-gray-800">外卖订单</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="wechat-tab-bar" id="wechat-tab-bar">
+            <div class="wechat-tab active" onclick="switchWechatTab('chat-list')">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                <span>微信</span>
+            </div>
+            <div class="wechat-tab" onclick="switchWechatTab('contacts')">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span>通讯录</span>
+            </div>
+            <div class="wechat-tab" onclick="switchWechatTab('discover')">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <span>发现</span>
+            </div>
+            <div class="wechat-tab" onclick="switchWechatTab('profile')">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span>我的</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 聊天详情页 -->
+    <div id="chat-detail-page" class="page hidden app-page">
+        <div class="chat-page">
+            <div class="app-header">
+                <button onclick="closeChatDetail()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <h1 id="chat-detail-title">聊天</h1>
+                <button onclick="showChatSettings()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v.01M12 12v.01M12 18v.01" />
+                    </svg>
+                </button>
+            </div>
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="chat-input-bar">
+                <button onclick="showTransferModal()">+</button>
+                <input type="text" id="chat-input" class="chat-input" placeholder="输入消息...">
+                <button onclick="sendMessage()">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 面具页面 -->
+    <div id="mask-page" class="page hidden app-page">
+        <div class="app-header">
+            <button onclick="closeMaskPage()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <h1>面具</h1>
+            <div></div>
+        </div>
+        <div class="p-4 flex-1 overflow-y-auto">
+            <button onclick="showAddMaskModal()" class="btn-primary w-full mb-4">+ 新建面具</button>
+            <div id="masks-list" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <!-- 钱包页面 -->
+    <div id="wallet-page" class="page hidden app-page">
+        <div class="app-header">
+            <button onclick="closeWalletPage()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <h1>钱包</h1>
+            <div></div>
+        </div>
+        <div class="p-4 flex-1 overflow-y-auto">
+            <div class="bg-pink-50 rounded-lg p-6 mb-6 text-center">
+                <h2 class="text-gray-600 mb-2">余额</h2>
+                <p id="wallet-balance" class="text-4xl font-bold text-pink-600">¥0.00</p>
+                <button onclick="showEditBalanceModal()" class="mt-4 text-sm text-pink-500">修改余额</button>
+            </div>
+            <h3 class="text-lg font-bold text-gray-800 mb-4">账单</h3>
+            <div id="bills-list" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <!-- 外卖页面 -->
+    <div id="takeout-page" class="page hidden app-page">
+        <div class="app-header">
+            <button onclick="goBackToHome()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <h1>外卖</h1>
+            <div></div>
+        </div>
+        <div class="p-4 flex-1 overflow-y-auto">
+            <div class="flex items-center space-x-2 mb-4">
+                <input type="text" id="takeout-search" class="input-field flex-1" placeholder="搜索商家或美食..." onkeydown="if(event.key==='Enter') searchTakeout()">
+                <button onclick="searchTakeout()" class="btn-primary px-4 py-3">搜索</button>
+            </div>
+            <div id="takeout-shops" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <!-- 商家详情 -->
+    <div id="shop-detail-page" class="page hidden app-page">
+        <div class="app-header">
+            <button onclick="closeShopDetail()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <h1 id="shop-detail-title">商家详情</h1>
+            <div></div>
+        </div>
+        <div class="p-4 flex-1 overflow-y-auto" id="product-list-container">
+            <div id="product-list" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <!-- 订单确认弹窗 -->
+    <div id="order-confirm-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">确认订单</h3>
+            <div id="order-summary" class="mb-4 p-4 bg-gray-50 rounded-lg"></div>
+            <div class="space-y-3">
+                <button onclick="payOrder()" class="btn-primary w-full">立即支付</button>
+                <button onclick="showRequestPayModal()" class="btn-secondary w-full">请求好友代付</button>
+                <button onclick="closeOrderConfirmModal()" class="btn-secondary w-full">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 请求代付弹窗 -->
+    <div id="request-pay-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">选择代付好友</h3>
+            <div id="request-pay-contacts" class="space-y-2 max-h-64 overflow-y-auto"></div>
+            <button onclick="closeRequestPayModal()" class="btn-secondary w-full mt-4">取消</button>
+        </div>
+    </div>
+
+    <!-- 订单详情 -->
+    <div id="order-detail-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">订单详情</h3>
+            <div id="order-detail-content" class="mb-4"></div>
+            <button onclick="closeOrderDetailModal()" class="btn-secondary w-full">关闭</button>
+        </div>
+    </div>
+
+    <!-- 配送进度 -->
+    <div id="delivery-progress-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">配送进度</h3>
+            <div id="delivery-progress-content" class="mb-4"></div>
+            <button onclick="closeDeliveryProgressModal()" class="btn-secondary w-full">关闭</button>
+        </div>
+    </div>
+
+    <!-- ===== 查手机页面 ===== -->
+    <!-- 选择联系人 -->
+    <div id="phone-check-select-page" class="page hidden app-page">
+        <div class="app-header">
+            <button onclick="closePhoneCheckSelect()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <h1>选择查谁</h1>
+            <div></div>
+        </div>
+        <div class="p-4 flex-1 overflow-y-auto">
+            <div id="phone-check-contact-list" class="space-y-2"></div>
+            <button onclick="confirmPhoneCheckTarget()" class="btn-primary w-full mt-4">确定</button>
+        </div>
+    </div>
+
+    <!-- 目标手机主界面 -->
+    <div id="phone-check-main-page" class="page hidden app-page">
+        <div class="app-header">
+            <button onclick="backToPhoneCheckSelect()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <h1 id="target-phone-title">手机</h1>
+            <div></div>
+        </div>
+        <div class="flex-1 flex flex-col items-center justify-center space-y-6 p-8">
+            <div class="app-icon flex flex-col items-center" onclick="openTargetWechat()">
+                <div class="w-16 h-16 bg-green-500 rounded-xl flex items-center justify-center shadow-md">
+                    <svg class="w-10 h-10 text-white" viewBox="0 0 1024 1024" fill="currentColor"><path d="M864 512c0 194.56-157.44 352-351.04 352-193.92 0-350.96-158.08-349.76-353.28 0-31.68 11.84-62.72 33.28-85.12 21.44-22.4 51.2-35.2 82.88-37.12 65.28-4.16 126.72 24.96 165.12 74.88 13.12 14.08 27.84 43.52 40.96 43.52 13.12 0 42.24-70.4 55.36-86.4 39.04-47.36 101.12-77.44 166.4-73.6 63.36 3.84 120.96 35.2 159.36 83.2 41.6 52.16 57.6 119.04 45.44 184.96-1.28 7.04-2.56 14.08-4.16 21.12-6.4 30.72-23.04 58.24-46.08 78.72-23.04 20.48-53.12 32-87.04 32-69.12 0-125.44-54.4-129.28-123.52-0.64-11.84 1.28-67.84-4.16-79.36-5.44-11.52-36.48-12.16-49.6-1.28-13.12 10.88-36.48 59.52-61.44 99.2-24.96 39.68-81.92 133.12-143.36 132.48-60.8-0.64-108.8-49.28-112-109.44-3.2-60.16 38.4-113.28 96-130.56 12.16-3.84 105.6-15.36 124.16-19.2 18.56-3.84 97.28-106.24 147.2-144 71.04-53.76 162.56-73.6 250.88-58.88 91.52 15.36 168.96 80.64 210.56 163.84 41.6 83.2 46.08 179.2 12.16 266.24-33.92 89.6-107.52 160-196.48 192-40.32 14.72-104.96 25.6-153.6 25.6-207.36 0-376.32-169.6-375.04-377.6 0-208 170.24-378.24 377.6-379.52 211.2-1.28 383.36 167.68 385.28 374.4z"/></svg>
+                </div>
+                <span class="text-xs text-gray-700 mt-2">微信</span>
+            </div>
+            <div class="app-icon flex flex-col items-center" onclick="openTargetAlbum()">
+                <div class="w-16 h-16 bg-yellow-400 rounded-xl flex items-center justify-center shadow-md">
+                    <svg class="w-10 h-10 text-white" viewBox="0 0 1024 1024" fill="currentColor"><path d="M928 128H96c-17.6 0-32 14.4-32 32v704c0 17.6 14.4 32 32 32h832c17.6 0 32-14.4 32-32V160c0-17.6-14.4-32-32-32zM256 576c-53.02 0-96-42.98-96-96s42.98-96 96-96 96 42.98 96 96-42.98 96-96 96zM896 768H128V640l192-224 384 448 128-128 64 64v128z"/></svg>
+                </div>
+                <span class="text-xs text-gray-700 mt-2">相册</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 查手机 - 目标微信（仿微信聊天列表） -->
+    <div id="target-wechat-page" class="page hidden app-page">
+        <div class="app-header">
+            <button onclick="closeTargetWechat()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <h1 id="target-wechat-title">微信</h1>
+            <button onclick="refreshTargetWechat()" class="p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+            </button>
+        </div>
+        <div class="p-4 flex-1 overflow-y-auto" id="target-wechat-container">
+            <div id="target-wechat-chat-list" class="space-y-2"></div>
+        </div>
+    </div>
+
+    <!-- 查手机 - 目标微信聊天详情 -->
+    <div id="target-wechat-chat-detail" class="page hidden app-page">
+        <div class="chat-page">
+            <div class="app-header">
+                <button onclick="closeTargetWechatChatDetail()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <h1 id="target-chat-detail-title">聊天</h1>
+                <button onclick="refreshTargetWechatChat()" class="p-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </button>
+            </div>
+            <div class="chat-messages" id="target-chat-messages"></div>
+            <div class="p-2 bg-gray-50 border-t border-gray-200 flex items-center space-x-2">
+                <input type="text" id="target-chat-prompt" class="input-field flex-1 text-sm" placeholder="自定义生成提示词（可选）">
+                <button onclick="applyTargetChatPrompt()" class="btn-secondary text-xs px-2 py-1">应用</button>
+            </div>
+            <div class="chat-input-bar">
+                <button onclick="showTargetTransferModal()">+</button>
+                <input type="text" id="target-chat-input" class="chat-input" placeholder="以目标身份发消息...">
+                <button onclick="sendTargetChatMsg()">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 查手机 - 目标相册 -->
+    <div id="target-album-page" class="page hidden app-page">
+        <div class="app-header">
+            <button onclick="closeTargetAlbum()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <h1 id="target-album-title">相册</h1>
+            <button onclick="refreshTargetAlbum()" class="p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+            </button>
+        </div>
+        <div class="p-4 flex-1 overflow-y-auto">
+            <div id="target-album-photos" class="grid grid-cols-2 gap-4"></div>
+        </div>
+    </div>
+
+    <!-- ===== 弹窗 ===== -->
+    <!-- 添加好友 -->
+    <div id="add-contact-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">添加好友</h3>
+            <div class="space-y-4">
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">名字</label><input type="text" id="contact-name" class="input-field" placeholder="输入名字"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">头像URL</label><input type="text" id="contact-avatar" class="input-field" placeholder="输入头像图片链接"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">性别</label><select id="contact-gender" class="input-field"><option value="男">男</option><option value="女">女</option><option value="其他">其他</option></select></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">人设</label><textarea id="contact-persona" class="input-field" rows="4" placeholder="详细描述这个角色的性格、背景、说话方式等"></textarea></div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mt-6">
+                <button onclick="closeAddContactModal()" class="btn-secondary">取消</button>
+                <button onclick="saveContact()" class="btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 选择联系人 -->
+    <div id="select-contact-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">选择联系人</h3>
+            <div id="select-contacts-list" class="space-y-2 max-h-64 overflow-y-auto"></div>
+            <button onclick="closeSelectContactModal()" class="btn-secondary w-full mt-4">取消</button>
+        </div>
+    </div>
+
+    <!-- 转账 -->
+    <div id="transfer-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">转账</h3>
+            <img src="https://img.heliar.top/file/1780829418707_IMG_9515.jpeg" alt="转账封面" class="transfer-cover">
+            <div class="space-y-4">
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">金额</label><input type="number" id="transfer-amount" class="input-field" placeholder="输入转账金额" min="0.01" step="0.01"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">备注（最多100字）</label><textarea id="transfer-note" class="input-field" rows="2" maxlength="100" placeholder="输入备注"></textarea></div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mt-6">
+                <button onclick="closeTransferModal()" class="btn-secondary">取消</button>
+                <button onclick="confirmTransfer()" class="btn-primary">确认转账</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 聊天设置 -->
+    <div id="chat-settings-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">聊天设置</h3>
+            <div class="space-y-4">
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">内置提示词（优先级最高）</label><textarea id="chat-prompt" class="input-field" rows="4" placeholder="输入AI回复时需要遵循的提示词"></textarea></div>
+                <button id="block-btn" onclick="toggleBlock()" class="btn-secondary w-full">拉黑</button>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mt-6">
+                <button onclick="closeChatSettings()" class="btn-secondary">取消</button>
+                <button onclick="saveChatSettings()" class="btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 拉黑 -->
+    <div id="blocked-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">已拉黑</h3>
+            <div id="blocked-message" class="mb-4 p-4 bg-gray-100 rounded-lg"></div>
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="unblockContact()" class="btn-primary">解除拉黑</button>
+                <button onclick="closeBlockedModal()" class="btn-secondary">拒绝解除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 朋友圈菜单 -->
+    <div id="moment-menu-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">朋友圈</h3>
+            <div class="space-y-4">
+                <button onclick="showPostMomentModal()" class="btn-primary w-full">发送朋友圈</button>
+                <button onclick="showGenerateMomentModal()" class="btn-secondary w-full">让角色生成朋友圈</button>
+            </div>
+            <button onclick="closeMomentMenu()" class="btn-secondary w-full mt-4">取消</button>
+        </div>
+    </div>
+
+    <!-- 发送朋友圈 -->
+    <div id="post-moment-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">发送朋友圈</h3>
+            <textarea id="moment-content" class="input-field" rows="4" placeholder="输入朋友圈内容"></textarea>
+            <div class="grid grid-cols-2 gap-4 mt-6">
+                <button onclick="closePostMomentModal()" class="btn-secondary">取消</button>
+                <button onclick="postMoment()" class="btn-primary">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 生成朋友圈 -->
+    <div id="generate-moment-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">选择角色</h3>
+            <div id="generate-moment-contacts" class="space-y-2 max-h-64 overflow-y-auto"></div>
+            <button onclick="closeGenerateMomentModal()" class="btn-secondary w-full mt-4">取消</button>
+        </div>
+    </div>
+
+    <!-- 编辑资料 -->
+    <div id="edit-profile-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">编辑资料</h3>
+            <div class="space-y-4">
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">名字</label><input type="text" id="edit-name" class="input-field" placeholder="输入名字"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">头像URL</label><input type="text" id="edit-avatar" class="input-field" placeholder="输入头像图片链接"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mt-6">
+                <button onclick="closeEditProfileModal()" class="btn-secondary">取消</button>
+                <button onclick="saveProfile()" class="btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加面具 -->
+    <div id="add-mask-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">新建面具</h3>
+            <div class="space-y-4">
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">面具名称</label><input type="text" id="mask-name" class="input-field" placeholder="输入面具名称"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">头像URL</label><input type="text" id="mask-avatar" class="input-field" placeholder="输入头像图片链接"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">性别</label><select id="mask-gender" class="input-field"><option value="男">男</option><option value="女">女</option><option value="其他">其他</option></select></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">人设</label><textarea id="mask-persona" class="input-field" rows="4" placeholder="详细描述你的人设"></textarea></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">关联角色</label><select id="mask-contact" class="input-field"><option value="">不关联特定角色</option></select></div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mt-6">
+                <button onclick="closeAddMaskModal()" class="btn-secondary">取消</button>
+                <button onclick="saveMask()" class="btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 修改余额 -->
+    <div id="edit-balance-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">修改余额</h3>
+            <input type="number" id="new-balance" class="input-field" placeholder="输入新的余额" min="0" step="0.01">
+            <div class="grid grid-cols-2 gap-4 mt-6">
+                <button onclick="closeEditBalanceModal()" class="btn-secondary">取消</button>
+                <button onclick="saveBalance()" class="btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 保存预设 -->
+    <div id="preset-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">保存预设</h3>
+            <input type="text" id="preset-name" class="input-field" placeholder="输入预设名称">
+            <div class="grid grid-cols-2 gap-4 mt-6">
+                <button onclick="closePresetModal()" class="btn-secondary">取消</button>
+                <button onclick="savePreset()" class="btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 消息操作 -->
+    <div id="message-action-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">消息操作</h3>
+            <div class="space-y-4">
+                <button onclick="editMessage()" class="btn-secondary w-full">编辑消息</button>
+                <button onclick="deleteMessage()" class="btn-secondary w-full text-red-500">删除消息（彻底清除）</button>
+            </div>
+            <button onclick="closeMessageActionModal()" class="btn-secondary w-full mt-4">取消</button>
+        </div>
+    </div>
+
+    <!-- 编辑消息 -->
+    <div id="edit-message-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">编辑消息</h3>
+            <textarea id="edit-message-content" class="input-field" rows="4"></textarea>
+            <div class="grid grid-cols-2 gap-4 mt-6">
+                <button onclick="closeEditMessageModal()" class="btn-secondary">取消</button>
+                <button onclick="saveEditedMessage()" class="btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 查手机 - 转账弹窗（目标微信） -->
+    <div id="target-transfer-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">转账</h3>
+            <div class="space-y-4">
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">金额</label><input type="number" id="target-transfer-amount" class="input-field" placeholder="输入转账金额" min="0.01" step="0.01"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">备注</label><input type="text" id="target-transfer-note" class="input-field" placeholder="备注（可选）"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mt-6">
+                <button onclick="closeTargetTransferModal()" class="btn-secondary">取消</button>
+                <button onclick="confirmTargetTransfer()" class="btn-primary">确认转账</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 全局变量 ====================
+        const CORRECT_PASSWORD = '201314';
+        let currentPassword = '';
+        let models = [];
+        let currentConfig = {
+            url: '',
+            key: '',
+            model: ''
+        };
+
+        let contacts = [];
+        let chats = {};
+        let moments = [];
+        let user = {
+            name: '用户',
+            avatar: 'https://img.heliar.top/file/1780829322476_IMG_9514.jpeg'
+        };
+        let masks = [];
+        let wallet = {
+            balance: 0,
+            bills: []
+        };
+        let currentChatContactId = null;
+        let editingMessageId = null;
+        let lastSendTime = 0;
+
+        // 外卖数据
+        let takeoutShops = [];
+        let currentShopProducts = [];
+        let currentOrder = null;
+        let orders = [];
+        let cart = [];
+
+        // 查手机数据
+        let phoneCheckTarget = null;
+        let targetWechatContacts = [];
+        let targetWechatMessages = {};
+        let targetPhotos = [];
+        let currentTargetContactId = null;
+        let targetCustomPrompt = '';
+
+        // DOM元素
+        const passwordPage = document.getElementById('password-page');
+        const homePage = document.getElementById('home-page');
+        const settingsPage = document.getElementById('settings-page');
+        const wechatPage = document.getElementById('wechat-page');
+        const chatDetailPage = document.getElementById('chat-detail-page');
+        const maskPage = document.getElementById('mask-page');
+        const walletPage = document.getElementById('wallet-page');
+        const successToast = document.getElementById('success-toast');
+        const toast = document.getElementById('toast');
+        const dots = document.querySelectorAll('.dot');
+        const keys = document.querySelectorAll('.key');
+        const modelSelectContainer = document.getElementById('model-select-container');
+        const modelSelect = document.getElementById('model-select');
+
+        // ==================== 页面初始化 ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('focus', function(e) {
+                if (e.target.tagName === 'INPUT' && e.target.id !== 'api-url' && e.target.id !== 'api-key' &&
+                    e.target.id !== 'preset-name' && e.target.id !== 'contact-name' && e.target.id !== 'contact-avatar' &&
+                    e.target.id !== 'contact-persona' && e.target.id !== 'transfer-amount' && e.target.id !== 'transfer-note' &&
+                    e.target.id !== 'chat-prompt' && e.target.id !== 'moment-content' && e.target.id !== 'edit-name' &&
+                    e.target.id !== 'edit-avatar' && e.target.id !== 'mask-name' && e.target.id !== 'mask-avatar' &&
+                    e.target.id !== 'mask-persona' && e.target.id !== 'new-balance' && e.target.id !== 'chat-input' &&
+                    e.target.id !== 'edit-message-content' && e.target.id !== 'takeout-search' &&
+                    e.target.id !== 'target-wechat-input' && e.target.id !== 'wallpaper-url' &&
+                    e.target.id !== 'icon-url' && e.target.id !== 'custom-css-editor' &&
+                    e.target.id !== 'target-chat-input' && e.target.id !== 'target-chat-prompt' &&
+                    e.target.id !== 'target-transfer-amount' && e.target.id !== 'target-transfer-note') {
+                    e.target.blur();
+                }
+            }, true);
+
+            keys.forEach(key => {
+                key.addEventListener('click', function() {
+                    const value = this.getAttribute('data-value');
+                    handleKeyPress(value);
+                });
+                key.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    const value = this.getAttribute('data-value');
+                    handleKeyPress(value);
+                }, { passive: false });
+            });
+
+            const sendBtn = document.querySelector('.chat-input-bar button:last-child');
+            sendBtn.addEventListener('click', function(e) {
+                const now = Date.now();
+                if (now - lastSendTime < 300) {
+                    e.preventDefault();
+                    triggerAIReply();
+                }
+                lastSendTime = now;
+            });
+
+            loadSavedConfig();
+            loadWechatData();
+            updateUI();
+            initBeautify();
+        });
+
+        // ==================== 密码解锁 ====================
+        function handleKeyPress(value) {
+            if (value === 'backspace') {
+                if (currentPassword.length > 0) {
+                    currentPassword = currentPassword.slice(0, -1);
+                }
+            } else {
+                if (currentPassword.length < 6) {
+                    currentPassword += value;
+                }
+            }
+            updateDots();
+            if (currentPassword.length === 6) {
+                checkPassword();
+            }
+        }
+
+        function updateDots() {
+            dots.forEach((dot, index) => {
+                if (index < currentPassword.length) {
+                    dot.classList.add('filled');
+                } else {
+                    dot.classList.remove('filled');
+                }
+            });
+        }
+
+        function checkPassword() {
+            if (currentPassword === CORRECT_PASSWORD) {
+                successToast.classList.add('show');
+                setTimeout(() => {
+                    passwordPage.classList.add('hidden');
+                    homePage.classList.remove('hidden');
+                    document.body.classList.remove('password-body');
+                    document.body.classList.add('home-body');
+                    successToast.classList.remove('show');
+                }, 1000);
+            } else {
+                passwordPage.style.animation = 'shake 0.5s ease';
+                setTimeout(() => {
+                    passwordPage.style.animation = '';
+                    currentPassword = '';
+                    updateDots();
+                }, 500);
+            }
+        }
+
+        // ==================== 页面导航 ====================
+        function goBackToHome() {
+            settingsPage.classList.add('hidden');
+            wechatPage.classList.add('hidden');
+            chatDetailPage.classList.add('hidden');
+            maskPage.classList.add('hidden');
+            walletPage.classList.add('hidden');
+            document.getElementById('takeout-page').classList.add('hidden');
+            document.getElementById('shop-detail-page').classList.add('hidden');
+            document.getElementById('phone-check-select-page').classList.add('hidden');
+            document.getElementById('phone-check-main-page').classList.add('hidden');
+            document.getElementById('target-wechat-page').classList.add('hidden');
+            document.getElementById('target-wechat-chat-detail').classList.add('hidden');
+            document.getElementById('target-album-page').classList.add('hidden');
+            homePage.classList.remove('hidden');
+        }
+
+        function openSettings() {
+            homePage.classList.add('hidden');
+            settingsPage.classList.remove('hidden');
+        }
+
+        function openWechat() {
+            homePage.classList.add('hidden');
+            wechatPage.classList.remove('hidden');
+            switchWechatTab('chat-list');
+        }
+
+        function showToast(message, duration = 2000) {
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, duration);
+        }
+
+        // ==================== 设置功能 ====================
+        async function fetchModels() {
+            const url = document.getElementById('api-url').value.trim();
+            const key = document.getElementById('api-key').value.trim();
+            if (!url) { showToast('请输入API URL地址'); return; }
+            showToast('正在拉取模型...');
+            try {
+                const response = await fetch(`${url}/models`, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' }
+                });
+                if (!response.ok) throw new Error(`HTTP错误: ${response.status}`);
+                const data = await response.json();
+                if (data.data && Array.isArray(data.data)) {
+                    models = data.data;
+                    updateModelSelect();
+                    showToast(`成功拉取到 ${models.length} 个模型`);
+                } else {
+                    throw new Error('API返回格式不正确');
+                }
+            } catch (error) {
+                showToast(`拉取模型失败: ${error.message}`);
+                console.error('拉取模型错误:', error);
+            }
+        }
+
+        function updateModelSelect() {
+            modelSelect.innerHTML = '';
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model.id;
+                option.textContent = model.id;
+                modelSelect.appendChild(option);
+            });
+            modelSelectContainer.classList.remove('hidden');
+        }
+
+        function saveConfig() {
+            currentConfig.url = document.getElementById('api-url').value.trim();
+            currentConfig.key = document.getElementById('api-key').value.trim();
+            currentConfig.model = modelSelect.value;
+            if (!currentConfig.url) { showToast('请输入API URL地址'); return; }
+            localStorage.setItem('api_config', JSON.stringify(currentConfig));
+            showToast('配置已保存');
+        }
+
+        function loadSavedConfig() {
+            const savedConfig = localStorage.getItem('api_config');
+            if (savedConfig) {
+                currentConfig = JSON.parse(savedConfig);
+                document.getElementById('api-url').value = currentConfig.url;
+                document.getElementById('api-key').value = currentConfig.key;
+            }
+        }
+
+        function showPresetModal() {
+            document.getElementById('preset-modal').classList.add('show');
+        }
+
+        function closePresetModal() {
+            document.getElementById('preset-modal').classList.remove('show');
+            document.getElementById('preset-name').value = '';
+        }
+
+        function savePreset() {
+            const presetName = document.getElementById('preset-name').value.trim();
+            if (!presetName) { showToast('请输入预设名称'); return; }
+            const preset = {
+                name: presetName,
+                url: document.getElementById('api-url').value.trim(),
+                key: document.getElementById('api-key').value.trim(),
+                model: modelSelect.value
+            };
+            if (!preset.url) { showToast('请输入API URL地址'); return; }
+            let presets = JSON.parse(localStorage.getItem('api_presets') || '[]');
+            presets.push(preset);
+            localStorage.setItem('api_presets', JSON.stringify(presets));
+            closePresetModal();
+            showToast(`预设"${presetName}"已保存`);
+        }
+
+        async function testApi() {
+            const url = document.getElementById('api-url').value.trim();
+            const key = document.getElementById('api-key').value.trim();
+            const model = modelSelect.value;
+            if (!url) { showToast('请输入API URL地址'); return; }
+            if (!model) { showToast('请先拉取并选择一个模型'); return; }
+            showToast('正在测试API连接...');
+            document.getElementById('test-result').classList.add('hidden');
+            try {
+                const response = await fetch(`${url}/chat/completions`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model: model, messages: [{ role: 'user', content: '你好' }], max_tokens: 10 })
+                });
+                const data = await response.json();
+                document.getElementById('test-result-content').textContent = JSON.stringify(data, null, 2);
+                document.getElementById('test-result').classList.remove('hidden');
+                if (response.ok) {
+                    showToast('API测试成功！');
+                } else {
+                    showToast(`API测试失败: ${data.error?.message || '未知错误'}`);
+                }
+            } catch (error) {
+                document.getElementById('test-result-content').textContent = `错误: ${error.message}`;
+                document.getElementById('test-result').classList.remove('hidden');
+                showToast(`API测试失败: ${error.message}`);
+                console.error('API测试错误:', error);
+            }
+        }
+
+        // ==================== 微信功能 ====================
+        function switchWechatTab(tabName) {
+            document.querySelectorAll('.wechat-tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.querySelectorAll('.wechat-tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+            document.querySelectorAll('.wechat-tab').forEach(tab => {
+                if (tab.getAttribute('onclick').includes(tabName)) {
+                    tab.classList.add('active');
+                }
+            });
+            const titles = { 'chat-list': '微信', 'contacts': '通讯录', 'discover': '发现', 'profile': '我的' };
+            document.getElementById('wechat-title').textContent = titles[tabName];
+        }
+
+        function showWechatMenu() {
+            const activeTab = document.querySelector('.wechat-tab.active').getAttribute('onclick').match(/'([^']+)'/)[1];
+            if (activeTab === 'chat-list') {
+                showSelectContactModal();
+            }
+        }
+
+        function showSelectContactModal() {
+            const list = document.getElementById('select-contacts-list');
+            list.innerHTML = '';
+            contacts.forEach(contact => {
+                const item = document.createElement('div');
+                item.className = 'contact-item cursor-pointer';
+                item.innerHTML =
+                    `<img src="${contact.avatar}" alt="${contact.name}" class="contact-avatar"><span class="contact-name">${contact.name}</span>`;
+                item.onclick = () => { closeSelectContactModal();
+                    openChat(contact.id); };
+                list.appendChild(item);
+            });
+            if (contacts.length === 0) {
+                list.innerHTML = '<p class="text-center text-gray-500 py-4">暂无联系人，请先添加好友</p>';
+            }
+            document.getElementById('select-contact-modal').classList.add('show');
+        }
+
+        function closeSelectContactModal() {
+            document.getElementById('select-contact-modal').classList.remove('show');
+        }
+
+        // ==================== 通讯录 ====================
+        function showAddContactModal() {
+            document.getElementById('add-contact-modal').classList.add('show');
+            document.getElementById('contact-name').value = '';
+            document.getElementById('contact-avatar').value = '';
+            document.getElementById('contact-gender').value = '女';
+            document.getElementById('contact-persona').value = '';
+            document.getElementById('add-contact-modal').dataset.editId = '';
+        }
+
+        function closeAddContactModal() {
+            document.getElementById('add-contact-modal').classList.remove('show');
+        }
+
+        function editContact(contactId) {
+            const contact = contacts.find(c => c.id === contactId);
+            if (!contact) return;
+            document.getElementById('contact-name').value = contact.name;
+            document.getElementById('contact-avatar').value = contact.avatar;
+            document.getElementById('contact-gender').value = contact.gender;
+            document.getElementById('contact-persona').value = contact.persona;
+            document.getElementById('add-contact-modal').dataset.editId = contactId;
+            document.getElementById('add-contact-modal').classList.add('show');
+        }
+
+        function saveContact() {
+            const name = document.getElementById('contact-name').value.trim();
+            const avatar = document.getElementById('contact-avatar').value.trim();
+            const gender = document.getElementById('contact-gender').value;
+            const persona = document.getElementById('contact-persona').value.trim();
+            const editId = document.getElementById('add-contact-modal').dataset.editId;
+            if (!name) { showToast('请输入名字'); return; }
+            if (editId) {
+                const contact = contacts.find(c => c.id === editId);
+                if (contact) {
+                    contact.name = name;
+                    contact.avatar = avatar || 'https://img.heliar.top/file/1780829322476_IMG_9514.jpeg';
+                    contact.gender = gender;
+                    contact.persona = persona;
+                }
+            } else {
+                const newContact = {
+                    id: Date.now().toString(),
+                    name: name,
+                    avatar: avatar || 'https://img.heliar.top/file/1780829322476_IMG_9514.jpeg',
+                    gender: gender,
+                    persona: persona,
+                    prompt: '',
+                    blocked: false,
+                    messages: [],
+                    signature: ''
+                };
+                contacts.push(newContact);
+                chats[newContact.id] = [];
+            }
+            saveWechatData();
+            updateUI();
+            closeAddContactModal();
+            showToast(editId ? '联系人已更新' : '好友添加成功');
+        }
+
+        // ==================== 聊天 ====================
+        function openChat(contactId) {
+            const contact = contacts.find(c => c.id === contactId);
+            if (!contact) return;
+            currentChatContactId = contactId;
+            document.getElementById('chat-detail-title').textContent = contact.name;
+            wechatPage.classList.add('hidden');
+            chatDetailPage.classList.remove('hidden');
+            renderMessages();
+        }
+
+        function closeChatDetail() {
+            chatDetailPage.classList.add('hidden');
+            wechatPage.classList.remove('hidden');
+            currentChatContactId = null;
+            updateUI();
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const content = input.value.trim();
+            if (!content || !currentChatContactId) return;
+            const contact = contacts.find(c => c.id === currentChatContactId);
+            if (!contact) return;
+            const message = {
+                id: Date.now().toString(),
+                role: 'user',
+                content: content,
+                timestamp: new Date().toISOString()
+            };
+            if (!chats[currentChatContactId]) {
+                chats[currentChatContactId] = [];
+            }
+            chats[currentChatContactId].push(message);
+            input.value = '';
+            renderMessages();
+            saveWechatData();
+        }
+
+        async function triggerAIReply() {
+            if (!currentChatContactId) return;
+            const contact = contacts.find(c => c.id === currentChatContactId);
+            if (!contact) return;
+            if (contact.blocked) {
+                await generateBlockedMessage();
+                document.getElementById('blocked-modal').classList.add('show');
+                return;
+            }
+            if (!currentConfig.url || !currentConfig.model) {
+                showToast('请先在设置中配置API并选择模型');
+                return;
+            }
+            showToast('正在生成回复...');
+            try {
+                let systemPrompt =
+                    `你现在扮演的角色是：${contact.name}，性别：${contact.gender}。\n人设：${contact.persona}\n请严格按照这个人设进行回复，说话要自然，像真实聊天一样。\n回复要求：\n1. 分段分句回复，每句话一个气泡\n2. 不要只回复一个气泡\n3. 语气要符合人设\n4. 不要使用任何Markdown格式`;
+                if (contact.prompt) {
+                    systemPrompt += `\n\n额外要求：${contact.prompt}`;
+                }
+                const mask = masks.find(m => m.contactId === currentChatContactId || m.contactId === '');
+                if (mask) {
+                    systemPrompt += `\n\n对方的人设：${mask.persona}，你要把对方当成这个人来对话。`;
+                }
+                const messages = [{ role: 'system', content: systemPrompt }];
+                const recentMessages = chats[currentChatContactId].slice(-10);
+                recentMessages.forEach(msg => {
+                    messages.push({
+                        role: msg.role === 'user' ? 'user' : 'assistant',
+                        content: msg.content
+                    });
+                });
+                const response = await fetch(`${currentConfig.url}/chat/completions`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${currentConfig.key}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model: currentConfig.model, messages: messages, temperature: 0.7,
+                        max_tokens: 500 })
+                });
+                if (!response.ok) throw new Error(`HTTP错误: ${response.status}`);
+                const data = await response.json();
+                const replyContent = data.choices[0].message.content;
+                const sentences = replyContent.split(/[。！？.!?]+/).filter(s => s.trim());
+                sentences.forEach((sentence, index) => {
+                    setTimeout(() => {
+                        const aiMessage = {
+                            id: (Date.now() + index).toString(),
+                            role: 'assistant',
+                            content: sentence.trim() + (sentence.trim().match(/[。！？.!?]$/) ? '' : '。'),
+                            timestamp: new Date().toISOString()
+                        };
+                        chats[currentChatContactId].push(aiMessage);
+                        renderMessages();
+                        saveWechatData();
+                    }, index * 500);
+                });
+            } catch (error) {
+                showToast(`生成回复失败: ${error.message}`);
+                console.error('AI回复错误:', error);
+            }
+        }
+
+        function renderMessages() {
+            const container = document.getElementById('chat-messages');
+            container.innerHTML = '';
+            if (!currentChatContactId || !chats[currentChatContactId]) return;
+            const contact = contacts.find(c => c.id === currentChatContactId);
+            if (!contact) return;
+            chats[currentChatContactId].forEach(message => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = message.role === 'user' ? 'message-right' : 'message-left';
+                if (contact.blocked && message.role === 'assistant') {
+                    messageDiv.classList.add('message-blocked');
+                }
+                const bubble = document.createElement('div');
+                bubble.className = 'message-bubble';
+                if (message.content && message.content.startsWith('[转账]')) {
+                    const parts = message.content.replace('[转账]', '').trim().split('\n备注：');
+                    const amount = parts[0].replace('¥', '').trim();
+                    const note = parts[1] || '';
+                    bubble.innerHTML = `
+                        <div class="transfer-card">
+                            <div class="amount">¥${amount}</div>
+                            ${note ? `<div class="note">备注：${note}</div>` : ''}
+                            <div class="status">✅ 已转账</div>
+                        </div>
+                    `;
+                    bubble.style.background = 'transparent';
+                    bubble.style.padding = '0';
+                } else {
+                    bubble.textContent = message.content;
+                }
+                bubble.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    showMessageActionModal(message.id);
+                });
+                let touchTimer;
+                bubble.addEventListener('touchstart', function() {
+                    touchTimer = setTimeout(() => {
+                        showMessageActionModal(message.id);
+                    }, 500);
+                });
+                bubble.addEventListener('touchend', function() {
+                    clearTimeout(touchTimer);
+                });
+                messageDiv.appendChild(bubble);
+                container.appendChild(messageDiv);
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showMessageActionModal(messageId) {
+            editingMessageId = messageId;
+            document.getElementById('message-action-modal').classList.add('show');
+        }
+
+        function closeMessageActionModal() {
+            document.getElementById('message-action-modal').classList.remove('show');
+            editingMessageId = null;
+        }
+
+        function editMessage() {
+            closeMessageActionModal();
+            if (!currentChatContactId || !editingMessageId) return;
+            const message = chats[currentChatContactId].find(m => m.id === editingMessageId);
+            if (!message || message.role !== 'user') {
+                showToast('只能编辑自己发送的消息');
+                return;
+            }
+            document.getElementById('edit-message-content').value = message.content;
+            document.getElementById('edit-message-modal').classList.add('show');
+        }
+
+        function closeEditMessageModal() {
+            document.getElementById('edit-message-modal').classList.remove('show');
+        }
+
+        function saveEditedMessage() {
+            if (!currentChatContactId || !editingMessageId) return;
+            const newContent = document.getElementById('edit-message-content').value.trim();
+            if (!newContent) { showToast('消息内容不能为空'); return; }
+            const message = chats[currentChatContactId].find(m => m.id === editingMessageId);
+            if (message) {
+                message.content = newContent;
+                renderMessages();
+                saveWechatData();
+            }
+            closeEditMessageModal();
+            showToast('消息已编辑');
+        }
+
+        function deleteMessage() {
+            closeMessageActionModal();
+            if (!currentChatContactId || !editingMessageId) return;
+            chats[currentChatContactId] = chats[currentChatContactId].filter(m => m.id !== editingMessageId);
+            renderMessages();
+            saveWechatData();
+            showToast('消息已彻底删除');
+        }
+
+        // ==================== 转账（普通聊天） ====================
+        function showTransferModal() {
+            if (!currentChatContactId) return;
+            document.getElementById('transfer-amount').value = '';
+            document.getElementById('transfer-note').value = '';
+            document.getElementById('transfer-modal').classList.add('show');
+        }
+
+        function closeTransferModal() {
+            document.getElementById('transfer-modal').classList.remove('show');
+        }
+
+        function confirmTransfer() {
+            const amount = parseFloat(document.getElementById('transfer-amount').value);
+            const note = document.getElementById('transfer-note').value.trim();
+            if (!amount || amount <= 0) { showToast('请输入有效的转账金额'); return; }
+            if (amount > wallet.balance) { showToast('余额不足'); return; }
+            const contact = contacts.find(c => c.id === currentChatContactId);
+            if (!contact) return;
+            wallet.balance -= amount;
+            const bill = {
+                id: Date.now().toString(),
+                type: '支出',
+                amount: amount,
+                description: `转账给${contact.name}${note ? ` - ${note}` : ''}`,
+                timestamp: new Date().toISOString()
+            };
+            wallet.bills.unshift(bill);
+            const transferContent = `[转账] ¥${amount.toFixed(2)}${note ? `\n备注：${note}` : ''}`;
+            const transferMessage = {
+                id: Date.now().toString(),
+                role: 'user',
+                content: transferContent,
+                timestamp: new Date().toISOString()
+            };
+            if (!chats[currentChatContactId]) {
+                chats[currentChatContactId] = [];
+            }
+            chats[currentChatContactId].push(transferMessage);
+            closeTransferModal();
+            renderMessages();
+            saveWechatData();
+            showToast('转账成功');
+            setTimeout(triggerAIReply, 1000);
+        }
+
+        // ==================== 聊天设置 ====================
+        function showChatSettings() {
+            if (!currentChatContactId) return;
+            const contact = contacts.find(c => c.id === currentChatContactId);
+            if (!contact) return;
+            document.getElementById('chat-prompt').value = contact.prompt || '';
+            document.getElementById('block-btn').textContent = contact.blocked ? '解除拉黑' : '拉黑';
+            document.getElementById('chat-settings-modal').classList.add('show');
+        }
+
+        function closeChatSettings() {
+            document.getElementById('chat-settings-modal').classList.remove('show');
+        }
+
+        function saveChatSettings() {
+            if (!currentChatContactId) return;
+            const contact = contacts.find(c => c.id === currentChatContactId);
+            if (!contact) return;
+            contact.prompt = document.getElementById('chat-prompt').value.trim();
+            saveWechatData();
+            closeChatSettings();
+            showToast('设置已保存');
+        }
+
+        function toggleBlock() {
+            if (!currentChatContactId) return;
+            const contact = contacts.find(c => c.id === currentChatContactId);
+            if (!contact) return;
+            contact.blocked = !contact.blocked;
+            document.getElementById('block-btn').textContent = contact.blocked ? '解除拉黑' : '拉黑';
+            saveWechatData();
+            showToast(contact.blocked ? '已拉黑' : '已解除拉黑');
+        }
+
+        async function generateBlockedMessage() {
+            if (!currentConfig.url || !currentConfig.model) {
+                document.getElementById('blocked-message').textContent = '求求你了，把我从黑名单里放出来吧😭';
+                return;
+            }
+            try {
+                const contact = contacts.find(c => c.id === currentChatContactId);
+                if (!contact) return;
+                const response = await fetch(`${currentConfig.url}/chat/completions`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${currentConfig.key}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: currentConfig.model,
+                        messages: [{
+                            role: 'system',
+                            content: `你是${contact.name}，你被对方拉黑了，现在非常着急和难过，正在请求对方把你从黑名单里放出来。语气要真诚、可怜，符合你的人设：${contact.persona}。回复要简短，不超过50字。`
+                        }],
+                        temperature: 0.8,
+                        max_tokens: 100
+                    })
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('blocked-message').textContent = data.choices[0].message.content;
+                } else {
+                    throw new Error('API请求失败');
+                }
+            } catch (error) {
+                document.getElementById('blocked-message').textContent = '求求你了，把我从黑名单里放出来吧😭';
+            }
+        }
+
+        function unblockContact() {
+            if (!currentChatContactId) return;
+            const contact = contacts.find(c => c.id === currentChatContactId);
+            if (!contact) return;
+            contact.blocked = false;
+            closeBlockedModal();
+            saveWechatData();
+            showToast('已解除拉黑');
+        }
+
+        function closeBlockedModal() {
+            document.getElementById('blocked-modal').classList.remove('show');
+        }
+
+        // ==================== 朋友圈 ====================
+        function showMomentMenu() {
+            document.getElementById('moment-menu-modal').classList.add('show');
+        }
+
+        function closeMomentMenu() {
+            document.getElementById('moment-menu-modal').classList.remove('show');
+        }
+
+        function showPostMomentModal() {
+            closeMomentMenu();
+            document.getElementById('moment-content').value = '';
+            document.getElementById('post-moment-modal').classList.add('show');
+        }
+
+        function closePostMomentModal() {
+            document.getElementById('post-moment-modal').classList.remove('show');
+        }
+
+        function postMoment() {
+            const content = document.getElementById('moment-content').value.trim();
+            if (!content) { showToast('请输入朋友圈内容'); return; }
+            const moment = {
+                id: Date.now().toString(),
+                authorId: 'user',
+                authorName: user.name,
+                authorAvatar: user.avatar,
+                content: content,
+                timestamp: new Date().toISOString()
+            };
+            moments.unshift(moment);
+            closePostMomentModal();
+            renderMoments();
+            saveWechatData();
+            showToast('朋友圈已发送');
+        }
+
+        function showGenerateMomentModal() {
+            closeMomentMenu();
+            const list = document.getElementById('generate-moment-contacts');
+            list.innerHTML = '';
+            contacts.forEach(contact => {
+                const item = document.createElement('div');
+                item.className = 'contact-item cursor-pointer';
+                item.innerHTML =
+                    `<img src="${contact.avatar}" alt="${contact.name}" class="contact-avatar"><span class="contact-name">${contact.name}</span>`;
+                item.onclick = () => { closeGenerateMomentModal();
+                    generateMomentForContact(contact.id); };
+                list.appendChild(item);
+            });
+            if (contacts.length === 0) {
+                list.innerHTML = '<p class="text-center text-gray-500 py-4">暂无联系人</p>';
+            }
+            document.getElementById('generate-moment-modal').classList.add('show');
+        }
+
+        function closeGenerateMomentModal() {
+            document.getElementById('generate-moment-modal').classList.remove('show');
+        }
+
+        async function generateMomentForContact(contactId) {
+            const contact = contacts.find(c => c.id === contactId);
+            if (!contact) return;
+            if (!currentConfig.url || !currentConfig.model) {
+                showToast('请先在设置中配置API并选择模型');
+                return;
+            }
+            showToast('正在生成朋友圈...');
+            try {
+                const response = await fetch(`${currentConfig.url}/chat/completions`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${currentConfig.key}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: currentConfig.model,
+                        messages: [{
+                            role: 'system',
+                            content: `你是${contact.name}，性别：${contact.gender}，人设：${contact.persona}。请生成一条符合你人设的朋友圈内容，要自然、真实，像普通人发的朋友圈一样。不要太长，不超过100字。`
+                        }],
+                        temperature: 0.8,
+                        max_tokens: 150
+                    })
+                });
+                if (!response.ok) throw new Error(`HTTP错误: ${response.status}`);
+                const data = await response.json();
+                const content = data.choices[0].message.content;
+                const moment = {
+                    id: Date.now().toString(),
+                    authorId: contact.id,
+                    authorName: contact.name,
+                    authorAvatar: contact.avatar,
+                    content: content,
+                    timestamp: new Date().toISOString()
+                };
+                moments.unshift(moment);
+                renderMoments();
+                saveWechatData();
+                showToast('朋友圈已生成');
+            } catch (error) {
+                showToast(`生成失败: ${error.message}`);
+                console.error('生成朋友圈错误:', error);
+            }
+        }
+
+        function renderMoments() {
+            const container = document.getElementById('moments-list');
+            container.innerHTML = '';
+            moments.forEach(moment => {
+                const momentDiv = document.createElement('div');
+                momentDiv.className = 'moment-item';
+                const time = new Date(moment.timestamp);
+                const timeStr =
+                    `${time.getMonth()+1}月${time.getDate()}日 ${time.getHours()}:${String(time.getMinutes()).padStart(2, '0')}`;
+                momentDiv.innerHTML = `
+                    <div class="moment-header">
+                        <img src="${moment.authorAvatar}" alt="${moment.authorName}" class="moment-avatar">
+                        <div>
+                            <div class="moment-name">${moment.authorName}</div>
+                            <div class="moment-time">${timeStr}</div>
+                        </div>
+                    </div>
+                    <div class="moment-content">${moment.content}</div>
+                `;
+                container.appendChild(momentDiv);
+            });
+            if (moments.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-8">暂无朋友圈动态</p>';
+            }
+        }
+
+        // ==================== 我的页面 ====================
+        function showEditProfileModal() {
+            document.getElementById('edit-name').value = user.name;
+            document.getElementById('edit-avatar').value = user.avatar;
+            document.getElementById('edit-profile-modal').classList.add('show');
+        }
+
+        function closeEditProfileModal() {
+            document.getElementById('edit-profile-modal').classList.remove('show');
+        }
+
+        function saveProfile() {
+            const name = document.getElementById('edit-name').value.trim();
+            const avatar = document.getElementById('edit-avatar').value.trim();
+            if (!name) { showToast('请输入名字'); return; }
+            user.name = name;
+            user.avatar = avatar || user.avatar;
+            document.getElementById('user-name').textContent = user.name;
+            document.getElementById('user-avatar').src = user.avatar;
+            saveWechatData();
+            closeEditProfileModal();
+            showToast('资料已更新');
+        }
+
+        // ==================== 面具 ====================
+        function showMaskPage() {
+            wechatPage.classList.add('hidden');
+            maskPage.classList.remove('hidden');
+            renderMasks();
+        }
+
+        function closeMaskPage() {
+            maskPage.classList.add('hidden');
+            wechatPage.classList.remove('hidden');
+        }
+
+        function showAddMaskModal() {
+            document.getElementById('mask-name').value = '';
+            document.getElementById('mask-avatar').value = '';
+            document.getElementById('mask-gender').value = '女';
+            document.getElementById('mask-persona').value = '';
+            const select = document.getElementById('mask-contact');
+            select.innerHTML = '<option value="">不关联特定角色</option>';
+            contacts.forEach(contact => {
+                const option = document.createElement('option');
+                option.value = contact.id;
+                option.textContent = contact.name;
+                select.appendChild(option);
+            });
+            document.getElementById('add-mask-modal').classList.add('show');
+        }
+
+        function closeAddMaskModal() {
+            document.getElementById('add-mask-modal').classList.remove('show');
+        }
+
+        function saveMask() {
+            const name = document.getElementById('mask-name').value.trim();
+            const avatar = document.getElementById('mask-avatar').value.trim();
+            const gender = document.getElementById('mask-gender').value;
+            const persona = document.getElementById('mask-persona').value.trim();
+            const contactId = document.getElementById('mask-contact').value;
+            if (!name) { showToast('请输入面具名称'); return; }
+            const newMask = {
+                id: Date.now().toString(),
+                name: name,
+                avatar: avatar || 'https://img.heliar.top/file/1780829322476_IMG_9514.jpeg',
+                gender: gender,
+                persona: persona,
+                contactId: contactId
+            };
+            masks.push(newMask);
+            saveWechatData();
+            renderMasks();
+            closeAddMaskModal();
+            showToast('面具已创建');
+        }
+
+        function renderMasks() {
+            const container = document.getElementById('masks-list');
+            container.innerHTML = '';
+            masks.forEach(mask => {
+                const maskDiv = document.createElement('div');
+                maskDiv.className = 'p-4 bg-gray-50 rounded-lg';
+                const contactName = mask.contactId ?
+                    contacts.find(c => c.id === mask.contactId)?.name || '未知' :
+                    '全局生效';
+                maskDiv.innerHTML = `
+                    <div class="flex items-center mb-2">
+                        <img src="${mask.avatar}" alt="${mask.name}" class="w-10 h-10 rounded-lg mr-3 object-cover">
+                        <div>
+                            <h4 class="font-medium text-gray-800">${mask.name}</h4>
+                            <p class="text-sm text-gray-500">关联：${contactName}</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600">${mask.persona || '暂无人设'}</p>
+                `;
+                container.appendChild(maskDiv);
+            });
+            if (masks.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-8">暂无面具，点击上方按钮创建</p>';
+            }
+        }
+
+        // ==================== 钱包 ====================
+        function showWalletPage() {
+            wechatPage.classList.add('hidden');
+            walletPage.classList.remove('hidden');
+            updateWalletUI();
+        }
+
+        function closeWalletPage() {
+            walletPage.classList.add('hidden');
+            wechatPage.classList.remove('hidden');
+        }
+
+        function showEditBalanceModal() {
+            document.getElementById('new-balance').value = wallet.balance;
+            document.getElementById('edit-balance-modal').classList.add('show');
+        }
+
+        function closeEditBalanceModal() {
+            document.getElementById('edit-balance-modal').classList.remove('show');
+        }
+
+        function saveBalance() {
+            const newBalance = parseFloat(document.getElementById('new-balance').value);
+            if (isNaN(newBalance) || newBalance < 0) { showToast('请输入有效的余额'); return; }
+            wallet.balance = newBalance;
+            updateWalletUI();
+            saveWechatData();
+            closeEditBalanceModal();
+            showToast('余额已更新');
+        }
+
+        function updateWalletUI() {
+            document.getElementById('wallet-balance').textContent = `¥${wallet.balance.toFixed(2)}`;
+            const container = document.getElementById('bills-list');
+            container.innerHTML = '';
+            wallet.bills.forEach(bill => {
+                const billDiv = document.createElement('div');
+                billDiv.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-lg';
+                const time = new Date(bill.timestamp);
+                const timeStr =
+                    `${time.getMonth()+1}/${time.getDate()} ${time.getHours()}:${String(time.getMinutes()).padStart(2, '0')}`;
+                billDiv.innerHTML = `
+                    <div>
+                        <p class="font-medium text-gray-800">${bill.description}</p>
+                        <p class="text-sm text-gray-500">${timeStr}</p>
+                    </div>
+                    <p class="font-bold ${bill.type === '支出' ? 'text-red-500' : 'text-green-500'}">
+                        ${bill.type === '支出' ? '-' : '+'}¥${bill.amount.toFixed(2)}
+                    </p>
+                `;
+                container.appendChild(billDiv);
+            });
+            if (wallet.bills.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-4">暂无账单记录</p>';
+            }
+        }
+
+        // ==================== 外卖功能 ====================
+        function openTakeout() {
+            homePage.classList.add('hidden');
+            document.getElementById('takeout-page').classList.remove('hidden');
+            randomGenerateShops();
+        }
+
+        function closeTakeout() {
+            document.getElementById('takeout-page').classList.add('hidden');
+            homePage.classList.remove('hidden');
+        }
+
+        async function searchTakeout() {
+            const query = document.getElementById('takeout-search').value.trim();
+            if (!currentConfig.url || !currentConfig.model) {
+                showToast('请先在设置中配置API并选择模型');
+                return;
+            }
+            showToast(query ? `正在搜索"${query}"...` : '正在随机生成商家...');
+            try {
+                const prompt = query ?
+                    `请生成3-5个与"${query}"相关的外卖商家，每个商家包含：店铺名称、评分(1-5)、月销量、起送价、配送费、预计送达时间(分钟)。以JSON数组格式返回，每个对象包含：name, rating, sales, minPrice, deliveryFee, deliveryTime字段。` :
+                    `请随机生成3-5个常见的外卖商家，每个商家包含：店铺名称、评分(1-5)、月销量、起送价、配送费、预计送达时间(分钟)。以JSON数组格式返回，每个对象包含：name, rating, sales, minPrice, deliveryFee, deliveryTime字段。`;
+                const response = await fetch(`${currentConfig.url}/chat/completions`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${currentConfig.key}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: currentConfig.model,
+                        messages: [
+                            { role: 'system', content: '你是一个外卖平台的数据生成器，只返回JSON数组，不要有任何其他文字。' },
+                            { role: 'user', content: prompt }
+                        ],
+                        temperature: 0.8,
+                        max_tokens: 1000
+                    })
+                });
+                if (!response.ok) throw new Error(`HTTP错误: ${response.status}`);
+                const data = await response.json();
+                let content = data.choices[0].message.content;
+                const jsonMatch = content.match(/\[[\s\S]*\]/);
+                if (jsonMatch) {
+                    takeoutShops = JSON.parse(jsonMatch[0]);
+                } else {
+                    throw new Error('无法解析商家数据');
+                }
+                renderTakeoutShops();
+                showToast(`找到 ${takeoutShops.length} 家商家`);
+            } catch (error) {
+                showToast(`搜索失败: ${error.message}`);
+                takeoutShops = getDefaultShops(query);
+                renderTakeoutShops();
+            }
+        }
+
+        function randomGenerateShops() {
+            document.getElementById('takeout-search').value = '';
+            searchTakeout();
+        }
+
+        function getDefaultShops(query) {
+            const defaults = [
+                { name: '老王快餐', rating: 4.5, sales: 3280, minPrice: 15, deliveryFee: 3, deliveryTime: 25 },
+                { name: '张姐麻辣烫', rating: 4.2, sales: 2150, minPrice: 12, deliveryFee: 2, deliveryTime: 30 },
+                { name: '李记饺子馆', rating: 4.8, sales: 1560, minPrice: 18, deliveryFee: 0, deliveryTime: 35 },
+                { name: '陈氏烧烤', rating: 4.0, sales: 890, minPrice: 28, deliveryFee: 5, deliveryTime: 45 },
+                { name: '阿强奶茶', rating: 4.6, sales: 5200, minPrice: 8, deliveryFee: 2, deliveryTime: 20 }
+            ];
+            if (query) {
+                return defaults.filter(s => s.name.includes(query) || query.includes(s.name));
+            }
+            return defaults.sort(() => Math.random() - 0.5).slice(0, 3);
+        }
+
+        function renderTakeoutShops() {
+            const container = document.getElementById('takeout-shops');
+            container.innerHTML = '';
+            takeoutShops.forEach((shop, index) => {
+                const shopCard = document.createElement('div');
+                shopCard.className =
+                    'p-4 bg-white rounded-lg shadow-sm border border-gray-100 cursor-pointer active:scale-[0.98] transition-transform shop-card';
+                shopCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-lg font-bold text-gray-800">${shop.name}</h3>
+                        <span class="text-yellow-500 text-sm">★ ${shop.rating}</span>
+                    </div>
+                    <div class="flex text-sm text-gray-500 space-x-4 mb-2">
+                        <span>月售 ${shop.sales}</span>
+                        <span>起送 ¥${shop.minPrice}</span>
+                        <span>配送费 ¥${shop.deliveryFee}</span>
+                    </div>
+                    <div class="text-sm text-pink-500">约 ${shop.deliveryTime} 分钟送达</div>
+                `;
+                shopCard.onclick = () => openShopDetail(index);
+                container.appendChild(shopCard);
+            });
+            if (takeoutShops.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-8">未找到商家，试试其他关键词</p>';
+            }
+        }
+
+        async function openShopDetail(index) {
+            const shop = takeoutShops[index];
+            if (!shop) return;
+            document.getElementById('shop-detail-title').textContent = shop.name;
+            document.getElementById('takeout-page').classList.add('hidden');
+            document.getElementById('shop-detail-page').classList.remove('hidden');
+            cart = [];
+            await generateProducts(shop.name);
+        }
+
+        function closeShopDetail() {
+            document.getElementById('shop-detail-page').classList.add('hidden');
+            document.getElementById('takeout-page').classList.remove('hidden');
+            cart = [];
+        }
+
+        async function generateProducts(shopName) {
+            if (!currentConfig.url || !currentConfig.model) {
+                currentShopProducts = getDefaultProducts(shopName);
+                renderProducts();
+                return;
+            }
+            showToast('正在加载商品...');
+            try {
+                const response = await fetch(`${currentConfig.url}/chat/completions`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${currentConfig.key}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: currentConfig.model,
+                        messages: [
+                            { role: 'system', content: '你是一个外卖平台的商品数据生成器，只返回JSON数组，不要有任何其他文字。' },
+                            { role: 'user',
+                                content: `请为"${shopName}"生成6-10个商品，每个商品包含：name(商品名称), price(价格,数字), description(简短描述)。以JSON数组格式返回。` }
+                        ],
+                        temperature: 0.8,
+                        max_tokens: 1000
+                    })
+                });
+                if (!response.ok) throw new Error(`HTTP错误: ${response.status}`);
+                const data = await response.json();
+                let content = data.choices[0].message.content;
+                const jsonMatch = content.match(/\[[\s\S]*\]/);
+                if (jsonMatch) {
+                    currentShopProducts = JSON.parse(jsonMatch[0]);
+                } else {
+                    throw new Error('无法解析商品数据');
+                }
+                renderProducts();
+            } catch (error) {
+                currentShopProducts = getDefaultProducts(shopName);
+                renderProducts();
+            }
+        }
+
+        function getDefaultProducts(shopName) {
+            const productsMap = {
+                '老王快餐': [
+                    { name: '红烧肉套餐', price: 28, description: '经典红烧肉配米饭和蔬菜' },
+                    { name: '鱼香肉丝饭', price: 22, description: '酸甜可口的鱼香肉丝盖饭' },
+                    { name: '宫保鸡丁饭', price: 24, description: '正宗川味宫保鸡丁' },
+                    { name: '番茄炒蛋饭', price: 18, description: '家常番茄炒蛋配米饭' },
+                    { name: '酸辣土豆丝', price: 15, description: '爽脆酸辣土豆丝' },
+                    { name: '紫菜蛋花汤', price: 8, description: '清淡紫菜蛋花汤' }
+                ],
+                '张姐麻辣烫': [
+                    { name: '经典麻辣烫', price: 32, description: '多种食材任选，麻辣鲜香' },
+                    { name: '番茄锅底麻辣烫', price: 36, description: '酸甜番茄汤底' },
+                    { name: '骨汤麻辣烫', price: 34, description: '浓郁骨汤打底' },
+                    { name: '麻辣拌面', price: 20, description: '干拌麻辣口味' },
+                    { name: '冰粉', price: 10, description: '解辣必备甜品' }
+                ],
+                '李记饺子馆': [
+                    { name: '猪肉白菜饺', price: 26, description: '经典猪肉白菜馅' },
+                    { name: '韭菜鸡蛋饺', price: 24, description: '素馅韭菜鸡蛋' },
+                    { name: '虾仁三鲜饺', price: 38, description: '鲜嫩虾仁三鲜馅' },
+                    { name: '牛肉大葱饺', price: 32, description: '浓郁牛肉大葱' },
+                    { name: '煎饺拼盘', price: 30, description: '各种口味煎饺' },
+                    { name: '凉皮', price: 12, description: '清爽凉皮' }
+                ],
+                '陈氏烧烤': [
+                    { name: '羊肉串(10串)', price: 48, description: '炭烤羊肉串' },
+                    { name: '牛肉串(10串)', price: 52, description: '秘制牛肉串' },
+                    { name: '烤鸡翅(4个)', price: 28, description: '蜜汁烤鸡翅' },
+                    { name: '烤茄子', price: 15, description: '蒜蓉烤茄子' },
+                    { name: '烤玉米', price: 10, description: '香甜烤玉米' },
+                    { name: '啤酒', price: 8, description: '冰镇啤酒' }
+                ],
+                '阿强奶茶': [
+                    { name: '珍珠奶茶', price: 15, description: '经典珍珠奶茶' },
+                    { name: '杨枝甘露', price: 22, description: '芒果西柚椰奶' },
+                    { name: '芝士葡萄', price: 25, description: '芝士奶盖配葡萄' },
+                    { name: '芋泥波波', price: 20, description: '香浓芋泥波波茶' },
+                    { name: '柠檬绿茶', price: 12, description: '清爽柠檬绿茶' }
+                ]
+            };
+            return productsMap[shopName] || [
+                { name: '招牌套餐', price: 29, description: '本店招牌套餐' },
+                { name: '特色小吃', price: 18, description: '精选特色小吃' },
+                { name: '饮品', price: 10, description: '清凉饮品' }
+            ];
+        }
+
+        function renderProducts() {
+            const container = document.getElementById('product-list');
+            container.innerHTML = '';
+
+            currentShopProducts.forEach((product, index) => {
+                const productCard = document.createElement('div');
+                productCard.className = 'p-4 bg-white rounded-lg shadow-sm border border-gray-100 product-card';
+                productCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex-1">
+                            <h4 class="font-bold text-gray-800">${product.name}</h4>
+                            <p class="text-sm text-gray-500 mt-1">${product.description}</p>
+                        </div>
+                        <div class="text-right ml-4">
+                            <p class="text-lg font-bold text-pink-600">¥${product.price}</p>
+                            <button onclick="addToCart(${index})" class="mt-2 text-sm text-pink-500 border border-pink-300 px-3 py-1 rounded-full hover:bg-pink-50">
+                                + 加入购物车
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(productCard);
+            });
+
+            const checkoutBar = document.createElement('div');
+            checkoutBar.className = 'sticky bottom-0 bg-white p-4 border-t border-gray-200 shadow-lg -mx-4 -mb-4 mt-4';
+            const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+            checkoutBar.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <div>
+                        <span class="text-sm text-gray-500">购物车：<span id="cart-count">${cart.length}</span>件</span>
+                        <span class="text-lg font-bold text-pink-600 ml-4">¥<span id="cart-total">${total.toFixed(2)}</span></span>
+                    </div>
+                    <button onclick="showOrderConfirmModal()" class="btn-primary px-6">去结算</button>
+                </div>
+            `;
+            container.appendChild(checkoutBar);
+        }
+
+        function addToCart(index) {
+            const product = currentShopProducts[index];
+            if (!product) return;
+            const existing = cart.find(item => item.name === product.name);
+            if (existing) {
+                existing.quantity++;
+            } else {
+                cart.push({ ...product, quantity: 1 });
+            }
+            updateCartUI();
+            showToast(`已添加 ${product.name} 到购物车`);
+        }
+
+        function updateCartUI() {
+            const countEl = document.getElementById('cart-count');
+            const totalEl = document.getElementById('cart-total');
+            if (countEl) countEl.textContent = cart.length;
+            if (totalEl) {
+                const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+                totalEl.textContent = total.toFixed(2);
+            }
+        }
+
+        function showOrderConfirmModal() {
+            if (cart.length === 0) {
+                showToast('购物车为空，请先选择商品');
+                return;
+            }
+            const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            const summary = document.getElementById('order-summary');
+            summary.innerHTML = `
+                <h4 class="font-bold text-gray-800 mb-2">购物车商品</h4>
+                ${cart.map(item => `
+                    <div class="flex justify-between text-sm mb-1">
+                        <span>${item.name} × ${item.quantity}</span>
+                        <span>¥${(item.price * item.quantity).toFixed(2)}</span>
+                    </div>
+                `).join('')}
+                <div class="border-t pt-2 mt-2 flex justify-between font-bold">
+                    <span>合计</span>
+                    <span class="text-pink-600">¥${total.toFixed(2)}</span>
+                </div>
+            `;
+            document.getElementById('order-confirm-modal').classList.add('show');
+        }
+
+        function closeOrderConfirmModal() {
+            document.getElementById('order-confirm-modal').classList.remove('show');
+        }
+
+        function payOrder() {
+            const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            if (total > wallet.balance) {
+                showToast('余额不足，请充值或请求好友代付');
+                return;
+            }
+            wallet.balance -= total;
+            const orderNo = 'DD' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4)
+                .toUpperCase();
+            currentOrder = {
+                orderNo: orderNo,
+                shopName: document.getElementById('shop-detail-title').textContent,
+                items: [...cart],
+                total: total,
+                status: '已支付',
+                createTime: new Date().toISOString(),
+                progress: '商家正在接单'
+            };
+            orders.push(currentOrder);
+            wallet.bills.unshift({
+                id: Date.now().toString(),
+                type: '支出',
+                amount: total,
+                description: `外卖 - ${currentOrder.shopName}`,
+                timestamp: new Date().toISOString()
+            });
+            cart = [];
+            closeOrderConfirmModal();
+            saveWechatData();
+            showToast(`支付成功！订单号：${orderNo}`);
+            updateCartUI();
+            startDeliveryProgress(orderNo);
+        }
+
+        function showRequestPayModal() {
+            closeOrderConfirmModal();
+            const list = document.getElementById('request-pay-contacts');
+            list.innerHTML = '';
+            contacts.forEach(contact => {
+                const item = document.createElement('div');
+                item.className = 'contact-item cursor-pointer';
+                item.innerHTML =
+                    `<img src="${contact.avatar}" alt="${contact.name}" class="contact-avatar"><span class="contact-name">${contact.name}</span>`;
+                item.onclick = () => requestPay(contact.id);
+                list.appendChild(item);
+            });
+            if (contacts.length === 0) {
+                list.innerHTML = '<p class="text-center text-gray-500 py-4">暂无联系人</p>';
+            }
+            document.getElementById('request-pay-modal').classList.add('show');
+        }
+
+        function closeRequestPayModal() {
+            document.getElementById('request-pay-modal').classList.remove('show');
+        }
+
+        function requestPay(contactId) {
+            const contact = contacts.find(c => c.id === contactId);
+            if (!contact) return;
+            const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            const requestMessage = {
+                id: Date.now().toString(),
+                role: 'user',
+                content: `[代付请求] 请帮我支付外卖订单 ¥${total.toFixed(2)}，谢谢！`,
+                timestamp: new Date().toISOString()
+            };
+            if (!chats[contactId]) {
+                chats[contactId] = [];
+            }
+            chats[contactId].push(requestMessage);
+            cart = [];
+            closeRequestPayModal();
+            saveWechatData();
+            showToast(`已向 ${contact.name} 发送代付请求`);
+            updateCartUI();
+        }
+
+        async function startDeliveryProgress(orderNo) {
+            const stages = ['商家正在接单', '商家正在备餐', '骑手正在取餐', '骑手正在配送', '已送达'];
+            for (let i = 0; i < stages.length; i++) {
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                const order = orders.find(o => o.orderNo === orderNo);
+                if (order) {
+                    order.progress = stages[i];
+                    if (i === stages.length - 1) {
+                        order.status = '已完成';
+                    }
+                    saveWechatData();
+                }
+            }
+        }
+
+        function showOrderDetail() {
+            if (orders.length === 0) {
+                showToast('暂无订单');
+                return;
+            }
+            const latestOrder = orders[orders.length - 1];
+            const detail = document.getElementById('order-detail-content');
+            detail.innerHTML = `
+                <div class="space-y-2">
+                    <p><strong>订单号：</strong>${latestOrder.orderNo}</p>
+                    <p><strong>商家：</strong>${latestOrder.shopName}</p>
+                    <p><strong>状态：</strong>${latestOrder.status}</p>
+                    <p><strong>金额：</strong>¥${latestOrder.total.toFixed(2)}</p>
+                    <p><strong>进度：</strong>${latestOrder.progress}</p>
+                    <div class="mt-4">
+                        <button onclick="checkDeliveryProgress('${latestOrder.orderNo}')" class="btn-primary w-full">查看配送进度</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('order-detail-modal').classList.add('show');
+        }
+
+        function closeOrderDetailModal() {
+            document.getElementById('order-detail-modal').classList.remove('show');
+        }
+
+        async function checkDeliveryProgress(orderNo) {
+            closeOrderDetailModal();
+            const order = orders.find(o => o.orderNo === orderNo);
+            if (!order) {
+                showToast('订单不存在');
+                return;
+            }
+            if (currentConfig.url && currentConfig.model) {
+                try {
+                    const response = await fetch(`${currentConfig.url}/chat/completions`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${currentConfig.key}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            model: currentConfig.model,
+                            messages: [
+                                { role: 'system',
+                                    content: '你是一个外卖配送系统的客服，请根据当前状态生成一段友好的配送进度描述，不超过50字。' },
+                                { role: 'user',
+                                    content: `当前配送状态是：${order.progress}，商家是${order.shopName}，请用生动有趣的方式描述当前进度。` }
+                            ],
+                            temperature: 0.8,
+                            max_tokens: 100
+                        })
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        const progressContent = document.getElementById('delivery-progress-content');
+                        progressContent.innerHTML = `
+                            <div class="text-center">
+                                <div class="text-4xl mb-4">🚴</div>
+                                <p class="text-lg font-bold text-gray-800 mb-2">${order.progress}</p>
+                                <p class="text-gray-600">${data.choices[0].message.content}</p>
+                                <p class="text-sm text-gray-500 mt-4">订单号：${orderNo}</p>
+                            </div>
+                        `;
+                        document.getElementById('delivery-progress-modal').classList.add('show');
+                        return;
+                    }
+                } catch (e) {}
+            }
+            const progressContent = document.getElementById('delivery-progress-content');
+            progressContent.innerHTML = `
+                <div class="text-center">
+                    <div class="text-4xl mb-4">🚴</div>
+                    <p class="text-lg font-bold text-gray-800 mb-2">${order.progress}</p>
+                    <p class="text-sm text-gray-500">订单号：${orderNo}</p>
+                </div>
+            `;
+            document.getElementById('delivery-progress-modal').classList.add('show');
+        }
+
+        function closeDeliveryProgressModal() {
+            document.getElementById('delivery-progress-modal').classList.remove('show');
+        }
+
+        // ==================== 查手机功能（重构） ====================
+        function openPhoneCheck() {
+            homePage.classList.add('hidden');
+            document.getElementById('phone-check-select-page').classList.remove('hidden');
+            renderPhoneCheckContactList();
+        }
+
+        function closePhoneCheckSelect() {
+            document.getElementById('phone-check-select-page').classList.add('hidden');
+            homePage.classList.remove('hidden');
+        }
+
+        function renderPhoneCheckContactList() {
+            const list = document.getElementById('phone-check-contact-list');
+            list.innerHTML = '';
+            contacts.forEach(contact => {
+                const item = document.createElement('div');
+                item.className =
+                    `flex items-center p-3 rounded-lg cursor-pointer ${phoneCheckTarget && phoneCheckTarget.id === contact.id ? 'bg-blue-100 border border-blue-300' : 'bg-white border border-gray-200'} hover:bg-gray-50`;
+                item.innerHTML = `
+                    <img src="${contact.avatar}" alt="${contact.name}" class="w-12 h-12 rounded-full mr-3">
+                    <div>
+                        <p class="font-bold text-gray-800">${contact.name}</p>
+                        <p class="text-sm text-gray-500">${contact.signature || '普通用户'}</p>
+                    </div>
+                `;
+                item.onclick = () => selectPhoneCheckTarget(contact.id);
+                list.appendChild(item);
+            });
+            if (contacts.length === 0) {
+                list.innerHTML = '<p class="text-center text-gray-500 py-8">暂无联系人，请先在微信中添加好友</p>';
+            }
+        }
+
+        function selectPhoneCheckTarget(contactId) {
+            phoneCheckTarget = contacts.find(c => c.id === contactId);
+            renderPhoneCheckContactList();
+        }
+
+        function confirmPhoneCheckTarget() {
+            if (!phoneCheckTarget) {
+                showToast('请先选择一个联系人');
+                return;
+            }
+            document.getElementById('phone-check-select-page').classList.add('hidden');
+            document.getElementById('phone-check-main-page').classList.remove('hidden');
+            document.getElementById('target-phone-title').textContent = `${phoneCheckTarget.name}的手机`;
+        }
+
+        function backToPhoneCheckSelect() {
+            document.getElementById('phone-check-main-page').classList.add('hidden');
+            document.getElementById('phone-check-select-page').classList.remove('hidden');
+            targetWechatContacts = [];
+            targetWechatMessages = {};
+            targetPhotos = [];
+        }
+
+        // ---------- 目标微信（仿微信聊天列表） ----------
+        function openTargetWechat() {
+            document.getElementById('phone-check-main-page').classList.add('hidden');
+            document.getElementById('target-wechat-page').classList.remove('hidden');
+            document.getElementById('target-wechat-title').textContent = `${phoneCheckTarget.name}的微信`;
+            refreshTargetWechat();
+        }
+
+        function closeTargetWechat() {
+            document.getElementById('target-wechat-page').classList.add('hidden');
+            document.getElementById('phone-check-main-page').classList.remove('hidden');
+            document.getElementById('target-wechat-chat-detail').classList.add('hidden');
+            currentTargetContactId = null;
+        }
+
+        async function refreshTargetWechat() {
+            if (!currentConfig.url || !currentConfig.model) {
+                showToast('请先配置API');
+                return;
+            }
+            showToast('正在获取微信数据...');
+
+            try {
+                const contactResponse = await fetch(`${currentConfig.url}/chat/completions`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentConfig.key}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: currentConfig.model,
+                        messages: [
+                            { role: 'system',
+                                content: `你是一个微信数据生成器。请根据目标人物"${phoneCheckTarget.name}"的性格（${phoneCheckTarget.signature || '普通用户'}）生成他/她微信里的联系人列表。` },
+                            { role: 'user',
+                                content: `请生成5-8个联系人，每个联系人包含：id(字符串), name, avatar(用https://api.dicebear.com/7.x/avataaars/svg?seed=xxx 生成不同头像), lastMsg(最近一条消息预览)。以JSON数组格式返回。` }
+                        ],
+                        temperature: 0.8,
+                        max_tokens: 1500
+                    })
+                });
+                if (!contactResponse.ok) throw new Error('获取联系人失败');
+                const contactData = await contactResponse.json();
+                let contactContent = contactData.choices[0].message.content;
+                const contactJsonMatch = contactContent.match(/\[[\s\S]*\]/);
+                if (contactJsonMatch) {
+                    targetWechatContacts = JSON.parse(contactJsonMatch[0]);
+                } else {
+                    throw new Error('无法解析联系人');
+                }
+
+                targetWechatMessages = {};
+                for (const contact of targetWechatContacts) {
+                    const chatResponse = await fetch(`${currentConfig.url}/chat/completions`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${currentConfig.key}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: currentConfig.model,
+                            messages: [
+                                { role: 'system',
+                                    content: `你是一个微信聊天记录生成器。目标人物"${phoneCheckTarget.name}"，性格：${phoneCheckTarget.signature || '普通用户'}。请生成他与"${contact.name}"的对话记录。` },
+                                { role: 'user',
+                                    content: `请生成6-10条聊天记录，每条包含：id, from(发送者名称，可以是目标或联系人), to(接收者名称), content(消息内容), timestamp(时间戳字符串)。以JSON数组格式返回。` }
+                            ],
+                            temperature: 0.8,
+                            max_tokens: 1500
+                        })
+                    });
+                    if (chatResponse.ok) {
+                        const chatData = await chatResponse.json();
+                        let chatContent = chatData.choices[0].message.content;
+                        const chatJsonMatch = chatContent.match(/\[[\s\S]*\]/);
+                        if (chatJsonMatch) {
+                            targetWechatMessages[contact.id] = JSON.parse(chatJsonMatch[0]);
+                        } else {
+                            targetWechatMessages[contact.id] = [];
+                        }
+                    } else {
+                        targetWechatMessages[contact.id] = [];
+                    }
+                }
+
+                renderTargetWechatList();
+                showToast('微信数据已更新');
+            } catch (error) {
+                showToast(`刷新失败: ${error.message}`);
+                targetWechatContacts = [
+                    { id: 'c1', name: '张三', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=zhangsan',
+                        lastMsg: '晚上一起吃饭？' },
+                    { id: 'c2', name: '李四', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=lisi',
+                        lastMsg: '收到' },
+                    { id: 'c3', name: '王五', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=wangwu',
+                        lastMsg: '好的' }
+                ];
+                targetWechatMessages = {
+                    'c1': [
+                        { id: 'm1', from: phoneCheckTarget.name, to: '张三', content: '好啊，几点？', timestamp: new Date(
+                                Date.now() - 3600000).toISOString() },
+                        { id: 'm2', from: '张三', to: phoneCheckTarget.name, content: '七点吧', timestamp: new Date(
+                                Date.now() - 3500000).toISOString() }
+                    ],
+                    'c2': [
+                        { id: 'm3', from: phoneCheckTarget.name, to: '李四', content: '好的，收到', timestamp: new Date(
+                                Date.now() - 7200000).toISOString() }
+                    ],
+                    'c3': []
+                };
+                renderTargetWechatList();
+            }
+        }
+
+        function renderTargetWechatList() {
+            const container = document.getElementById('target-wechat-chat-list');
+            container.innerHTML = '';
+            targetWechatContacts.forEach(contact => {
+                const msgs = targetWechatMessages[contact.id] || [];
+                const lastMsg = msgs.length > 0 ? msgs[msgs.length - 1].content : '暂无消息';
+                const div = document.createElement('div');
+                div.className =
+                    'flex items-center p-3 bg-white rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:bg-gray-50';
+                div.innerHTML = `
+                    <img src="${contact.avatar}" class="w-12 h-12 rounded-full mr-3">
+                    <div class="flex-1">
+                        <p class="font-bold text-gray-800">${contact.name}</p>
+                        <p class="text-sm text-gray-500 truncate">${lastMsg}</p>
+                    </div>
+                    <span class="text-xs text-gray-400">${msgs.length > 0 ? new Date(msgs[msgs.length-1].timestamp).toLocaleTimeString() : ''}</span>
+                `;
+                div.onclick = () => openTargetWechatChat(contact.id);
+                container.appendChild(div);
+            });
+            if (targetWechatContacts.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-8">暂无联系人</p>';
+            }
+        }
+
+        // ---------- 目标微信聊天详情 ----------
+        function openTargetWechatChat(contactId) {
+            currentTargetContactId = contactId;
+            const contact = targetWechatContacts.find(c => c.id === contactId);
+            if (!contact) return;
+            document.getElementById('target-chat-detail-title').textContent = contact.name;
+            document.getElementById('target-wechat-page').classList.add('hidden');
+            document.getElementById('target-wechat-chat-detail').classList.remove('hidden');
+            renderTargetChatMessages();
+        }
+
+        function closeTargetWechatChatDetail() {
+            document.getElementById('target-wechat-chat-detail').classList.add('hidden');
+            document.getElementById('target-wechat-page').classList.remove('hidden');
+            currentTargetContactId = null;
+        }
+
+        function renderTargetChatMessages() {
+            const container = document.getElementById('target-chat-messages');
+            container.innerHTML = '';
+            if (!currentTargetContactId) return;
+            const msgs = targetWechatMessages[currentTargetContactId] || [];
+            msgs.forEach(msg => {
+                const isSelf = msg.from === phoneCheckTarget.name;
+                const div = document.createElement('div');
+                div.className = `flex ${isSelf ? 'justify-end' : 'justify-start'} mb-2`;
+                let contentHtml = msg.content;
+                if (msg.content && msg.content.startsWith('[转账]')) {
+                    const parts = msg.content.replace('[转账]', '').trim().split('\n备注：');
+                    const amount = parts[0].replace('¥', '').trim();
+                    const note = parts[1] || '';
+                    contentHtml = `
+                        <div class="transfer-card" style="${isSelf ? 'background:#ff85a2;border-color:#ff69b4;' : ''}">
+                            <div class="amount" style="${isSelf ? 'color:#fff;' : ''}">¥${amount}</div>
+                            ${note ? `<div class="note" style="${isSelf ? 'color:#f0f0f0;' : ''}">备注：${note}</div>` : ''}
+                            <div class="status" style="${isSelf ? 'color:#f0f0f0;' : ''}">✅ 已转账</div>
+                        </div>
+                    `;
+                }
+                div.innerHTML = `
+                    <div class="max-w-xs p-2 rounded-lg ${isSelf ? 'bg-green-100 text-right' : 'bg-white border border-gray-200'}">
+                        <p class="text-xs text-gray-500">${msg.from}</p>
+                        <div class="text-sm text-gray-800">${contentHtml}</div>
+                        <p class="text-xs text-gray-400 mt-1">${new Date(msg.timestamp).toLocaleTimeString()}</p>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function refreshTargetWechatChat() {
+            renderTargetChatMessages();
+            showToast('已刷新');
+        }
+
+        function applyTargetChatPrompt() {
+            const prompt = document.getElementById('target-chat-prompt').value.trim();
+            targetCustomPrompt = prompt;
+            showToast('提示词已应用，后续生成将使用该提示词');
+        }
+
+        async function sendTargetChatMsg() {
+            const input = document.getElementById('target-chat-input');
+            const text = input.value.trim();
+            if (!text || !currentTargetContactId) return;
+
+            const contact = targetWechatContacts.find(c => c.id === currentTargetContactId);
+            if (!contact) return;
+
+            const newMsg = {
+                id: Date.now().toString(),
+                from: phoneCheckTarget.name,
+                to: contact.name,
+                content: text,
+                timestamp: new Date().toISOString()
+            };
+            if (!targetWechatMessages[currentTargetContactId]) {
+                targetWechatMessages[currentTargetContactId] = [];
+            }
+            targetWechatMessages[currentTargetContactId].push(newMsg);
+            input.value = '';
+            renderTargetChatMessages();
+
+            let detected = false;
+            if (currentConfig.url && currentConfig.model) {
+                try {
+                    const detectResponse = await fetch(`${currentConfig.url}/chat/completions`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${currentConfig.key}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: currentConfig.model,
+                            messages: [
+                                { role: 'system',
+                                    content: `你是一个安全检测系统。判断以下行为是否可能被目标人物"${phoneCheckTarget.name}"发现有人在操控他的手机。返回true或false，仅返回布尔值。` },
+                                { role: 'user',
+                                    content: `目标正在使用微信，突然有一条来自他自己的消息发出："${text}"。这种情况被发现的概率大约是多少？请返回一个0-1之间的数字，表示概率。` }
+                            ],
+                            temperature: 0.3,
+                            max_tokens: 10
+                        })
+                    });
+                    if (detectResponse.ok) {
+                        const detectData = await detectResponse.json();
+                        const probStr = detectData.choices[0].message.content.trim();
+                        const prob = parseFloat(probStr);
+                        if (!isNaN(prob)) {
+                            detected = Math.random() < prob;
+                        } else {
+                            detected = Math.random() < 0.35;
+                        }
+                    } else {
+                        detected = Math.random() < 0.35;
+                    }
+                } catch (e) {
+                    detected = Math.random() < 0.35;
+                }
+            } else {
+                detected = Math.random() < 0.35;
+            }
+
+            if (detected) {
+                showToast(`⚠️ 警告！${phoneCheckTarget.name}似乎发现了异常！`);
+                const sysMsg = {
+                    id: 'sys-' + Date.now(),
+                    from: '系统',
+                    to: phoneCheckTarget.name,
+                    content: '⚠️ 你的账号可能在别处登录',
+                    timestamp: new Date().toISOString()
+                };
+                targetWechatMessages[currentTargetContactId].push(sysMsg);
+                renderTargetChatMessages();
+            } else {
+                showToast('消息已发送，未被发现');
+            }
+
+            const replyChance = 0.7;
+            if (Math.random() < replyChance && currentConfig.url && currentConfig.model) {
+                await generateTargetReply(contact);
+            }
+        }
+
+        async function generateTargetReply(contact) {
+            if (!currentConfig.url || !currentConfig.model) return;
+            try {
+                let systemPrompt =
+                    `你现在扮演的是"${contact.name}"，对方是"${phoneCheckTarget.name}"。请根据对话历史，以${contact.name}的身份回复一条消息，语气自然，符合日常聊天。`;
+                if (targetCustomPrompt) {
+                    systemPrompt += `\n额外要求：${targetCustomPrompt}`;
+                }
+                const msgs = targetWechatMessages[currentTargetContactId] || [];
+                const recent = msgs.slice(-5);
+                const chatHistory = recent.map(m => `${m.from}: ${m.content}`).join('\n');
+                const userMsg = recent.length > 0 ? recent[recent.length - 1].content : '';
+
+                const response = await fetch(`${currentConfig.url}/chat/completions`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentConfig.key}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: currentConfig.model,
+                        messages: [
+                            { role: 'system', content: systemPrompt },
+                            { role: 'user',
+                                content: `对话历史：\n${chatHistory}\n\n请根据以上内容，以${contact.name}的身份回复对方（${phoneCheckTarget.name}）的最后一条消息："${userMsg}"。回复要简短自然，不超过30字。` }
+                        ],
+                        temperature: 0.8,
+                        max_tokens: 60
+                    })
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    const reply = data.choices[0].message.content.trim();
+                    const replyMsg = {
+                        id: Date.now().toString(),
+                        from: contact.name,
+                        to: phoneCheckTarget.name,
+                        content: reply,
+                        timestamp: new Date().toISOString()
+                    };
+                    targetWechatMessages[currentTargetContactId].push(replyMsg);
+                    renderTargetChatMessages();
+                }
+            } catch (e) {
+                console.error('生成回复失败:', e);
+            }
+        }
+
+        function showTargetTransferModal() {
+            if (!currentTargetContactId) return;
+            document.getElementById('target-transfer-amount').value = '';
+            document.getElementById('target-transfer-note').value = '';
+            document.getElementById('target-transfer-modal').classList.add('show');
+        }
+
+        function closeTargetTransferModal() {
+            document.getElementById('target-transfer-modal').classList.remove('show');
+        }
+
+        function confirmTargetTransfer() {
+            const amount = parseFloat(document.getElementById('target-transfer-amount').value);
+            const note = document.getElementById('target-transfer-note').value.trim();
+            if (!amount || amount <= 0) { showToast('请输入有效金额'); return; }
+            if (amount > wallet.balance) { showToast('余额不足'); return; }
+            wallet.balance -= amount;
+            const contact = contacts.find(c => c.id === phoneCheckTarget.id);
+            if (contact) {
+                wallet.bills.unshift({
+                    id: Date.now().toString(),
+                    type: '支出',
+                    amount: amount,
+                    description: `转账给${contact.name}（通过查手机）${note ? ` - ${note}` : ''}`,
+                    timestamp: new Date().toISOString()
+                });
+            }
+            const transferContent = `[转账] ¥${amount.toFixed(2)}${note ? `\n备注：${note}` : ''}`;
+            const msg = {
+                id: Date.now().toString(),
+                from: phoneCheckTarget.name,
+                to: '对方',
+                content: transferContent,
+                timestamp: new Date().toISOString()
+            };
+            if (!targetWechatMessages[currentTargetContactId]) {
+                targetWechatMessages[currentTargetContactId] = [];
+            }
+            targetWechatMessages[currentTargetContactId].push(msg);
+            closeTargetTransferModal();
+            renderTargetChatMessages();
+            saveWechatData();
+            showToast('转账成功（已从钱包扣款）');
+        }
+
+        // ---------- 目标相册 ----------
+        function openTargetAlbum() {
+            document.getElementById('phone-check-main-page').classList.add('hidden');
+            document.getElementById('target-album-page').classList.remove('hidden');
+            document.getElementById('target-album-title').textContent = `${phoneCheckTarget.name}的相册`;
+            refreshTargetAlbum();
+        }
+
+        function closeTargetAlbum() {
+            document.getElementById('target-album-page').classList.add('hidden');
+            document.getElementById('phone-check-main-page').classList.remove('hidden');
+        }
+
+        async function refreshTargetAlbum() {
+            if (!currentConfig.url || !currentConfig.model) {
+                showToast('请先配置API');
+                return;
+            }
+            showToast('正在加载照片...');
+            try {
+                const response = await fetch(`${currentConfig.url}/chat/completions`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentConfig.key}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: currentConfig.model,
+                        messages: [
+                            { role: 'system',
+                                content: `你是一个手机相册照片描述生成器。目标人物"${phoneCheckTarget.name}"，性格：${phoneCheckTarget.signature || '普通用户'}。请生成他/她相册里的照片描述，每张照片用一段话描述画面内容，不要真实图片。` },
+                            { role: 'user',
+                                content: `请生成8-12张照片的描述，每张照片包含：id, title(照片标题), description(详细画面描述，50-100字), date(拍摄日期字符串)。以JSON数组格式返回。` }
+                        ],
+                        temperature: 0.9,
+                        max_tokens: 2000
+                    })
+                });
+                if (!response.ok) throw new Error('获取照片失败');
+                const data = await response.json();
+                let content = data.choices[0].message.content;
+                const jsonMatch = content.match(/\[[\s\S]*\]/);
+                if (jsonMatch) {
+                    targetPhotos = JSON.parse(jsonMatch[0]);
+                } else {
+                    throw new Error('无法解析照片数据');
+                }
+                renderTargetAlbum();
+                showToast('相册已更新');
+            } catch (error) {
+                showToast(`刷新失败: ${error.message}`);
+                targetPhotos = [
+                    { id: 'p1', title: '晚餐', description: '一张丰盛的餐桌，摆满了各种菜肴，灯光温暖。', date: '2026-06-20' },
+                    { id: 'p2', title: '公园散步', description: '傍晚的公园，夕阳透过树叶洒在小路上，有人遛狗。', date: '2026-06-18' },
+                    { id: 'p3', title: '猫咪', description: '一只橘猫在窗台上晒太阳，眯着眼睛很享受。', date: '2026-06-15' },
+                    { id: 'p4', title: '咖啡时光', description: '一杯拿铁放在木质桌面上，旁边有一本书。', date: '2026-06-12' }
+                ];
+                renderTargetAlbum();
+            }
+        }
+
+        function renderTargetAlbum() {
+            const container = document.getElementById('target-album-photos');
+            container.innerHTML = '';
+            targetPhotos.forEach(photo => {
+                const div = document.createElement('div');
+                div.className = 'bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden';
+                div.innerHTML = `
+                    <div class="h-40 bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
+                        <svg class="w-12 h-12 text-purple-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <div class="p-3">
+                        <p class="font-bold text-sm text-gray-800">${photo.title}</p>
+                        <p class="text-xs text-gray-500 mt-1 line-clamp-2">${photo.description}</p>
+                        <p class="text-xs text-gray-400 mt-1">${photo.date}</p>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            if (targetPhotos.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-8 col-span-2">暂无照片</p>';
+            }
+        }
+
+        // ==================== 美化功能 ====================
+        let cssPresets = JSON.parse(localStorage.getItem('cssPresets') || '{}');
+
+        function handleWallpaperFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('wallpaper-url').value = e.target.result;
+                showPreview('wallpaper-preview', e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function saveWallpaper() {
+            const url = document.getElementById('wallpaper-url').value.trim();
+            if (!url) { showToast('请输入壁纸URL'); return; }
+            localStorage.setItem('customWallpaper', url);
+            applyWallpaper(url);
+            showToast('壁纸已保存');
+        }
+
+        function applyWallpaper(url) {
+            document.body.style.backgroundImage = `url(${url})`;
+            document.body.style.backgroundSize = 'cover';
+            document.body.style.backgroundPosition = 'center';
+            document.body.style.backgroundAttachment = 'fixed';
+            showPreview('wallpaper-preview', url);
+        }
+
+        function showPreview(elementId, url) {
+            const el = document.getElementById(elementId);
+            if (el) {
+                el.style.display = 'block';
+                el.style.backgroundImage = `url(${url})`;
+            }
+        }
+
+        function handleIconFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('icon-url').value = e.target.result;
+                previewIcons(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function saveIcon() {
+            const url = document.getElementById('icon-url').value.trim();
+            if (!url) { showToast('请输入图标URL'); return; }
+            localStorage.setItem('customIcon', url);
+            applyIcon(url);
+            showToast('图标已保存');
+        }
+
+        function applyIcon(url) {
+            document.querySelectorAll('.app-icon img').forEach(img => {
+                img.src = url;
+            });
+            previewIcons(url);
+        }
+
+        function previewIcons(url) {
+            const container = document.getElementById('icon-preview');
+            if (!container) return;
+            container.innerHTML = '';
+            for (let i = 0; i < 4; i++) {
+                const img = document.createElement('img');
+                img.src = url;
+                img.className = 'w-10 h-10 rounded-lg shadow';
+                img.alt = '图标预览';
+                container.appendChild(img);
+            }
+        }
+
+        function applyCustomCSS() {
+            const css = document.getElementById('custom-css-editor').value.trim();
+            if (!css) { showToast('请输入CSS代码'); return; }
+            const oldStyle = document.getElementById('custom-style');
+            if (oldStyle) oldStyle.remove();
+            const style = document.createElement('style');
+            style.id = 'custom-style';
+            style.textContent = css;
+            document.head.appendChild(style);
+            localStorage.setItem('customCSS', css);
+            showToast('CSS已应用');
+        }
+
+        function saveCSSPreset() {
+            const css = document.getElementById('custom-css-editor').value.trim();
+            if (!css) { showToast('请先输入CSS代码'); return; }
+            const name = prompt('请输入预设名称：');
+            if (!name) return;
+            cssPresets[name] = css;
+            localStorage.setItem('cssPresets', JSON.stringify(cssPresets));
+            updateCSSPresetSelect();
+            showToast(`预设"${name}"已保存`);
+        }
+
+        function loadCSSPreset(name) {
+            if (!name) return;
+            const css = cssPresets[name];
+            if (css) {
+                document.getElementById('custom-css-editor').value = css;
+                applyCustomCSS();
+                showToast(`已应用预设"${name}"`);
+            }
+        }
+
+        function updateCSSPresetSelect() {
+            const select = document.getElementById('css-preset-select');
+            if (!select) return;
+            select.innerHTML = '<option value="">-- 选择预设 --</option>';
+            Object.keys(cssPresets).forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                select.appendChild(option);
+            });
+        }
+
+        function copyTemplateText(el) {
+            const text = el.textContent.trim();
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('模板已复制到剪贴板');
+            }).catch(() => {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast('模板已复制');
+            });
+        }
+
+        function loadExampleCSS(style) {
+            const examples = {
+                pink: `
+                    .app-header { background: linear-gradient(135deg, #ffb6c1 0%, #ff69b4 100%); }
+                    .btn-primary { background: linear-gradient(135deg, #ff85a2 0%, #ff69b4 100%); }
+                    .wechat-tab.active { color: #ff69b4; }
+                    .message-right .message-bubble { background-color: #ff85a2; color: white; }
+                    .chat-avatar { border-radius: 50%; border: 2px solid #ffb6c1; }
+                    body { background-color: #fff5f7; }
+                `,
+                dark: `
+                    body { background-color: #1a1a2e; color: #e0e0e0; }
+                    .app-page { background-color: #16213e; color: #e0e0e0; }
+                    .app-header { background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%); }
+                    .btn-primary { background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%); }
+                    .message-bubble { background: #2d2d44; color: #fff; }
+                    .message-right .message-bubble { background: #00d2ff; color: #1a1a2e; }
+                    .chat-input { background: #2d2d44; color: #fff; border-color: #3a7bd5; }
+                    .wechat-tab.active { color: #00d2ff; }
+                    .chat-item { border-bottom-color: #2d2d44; }
+                    .contact-item { border-bottom-color: #2d2d44; }
+                `,
+                minimal: `
+                    body { background-color: #f5f5f5; }
+                    .app-page { background-color: #ffffff; }
+                    .app-header { background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+                    .app-header h1 { color: #333; }
+                    .btn-primary { background: #333; }
+                    .btn-secondary { background: #f0f0f0; border: 1px solid #ddd; }
+                    .message-bubble { background: #f0f0f0; color: #333; }
+                    .message-right .message-bubble { background: #333; color: #fff; }
+                    .chat-input { border-color: #ddd; }
+                    .wechat-tab.active { color: #333; }
+                    .wechat-tab-bar { background: #fff; }
+                `
+            };
+            const css = examples[style];
+            if (css) {
+                document.getElementById('custom-css-editor').value = css;
+                applyCustomCSS();
+                showToast(`已应用${style}风格`);
+            }
+        }
+
+        function initBeautify() {
+            const savedWallpaper = localStorage.getItem('customWallpaper');
+            if (savedWallpaper) {
+                document.getElementById('wallpaper-url').value = savedWallpaper;
+                applyWallpaper(savedWallpaper);
+            }
+            const savedIcon = localStorage.getItem('customIcon');
+            if (savedIcon) {
+                document.getElementById('icon-url').value = savedIcon;
+                applyIcon(savedIcon);
+            }
+            const savedCSS = localStorage.getItem('customCSS');
+            if (savedCSS) {
+                document.getElementById('custom-css-editor').value = savedCSS;
+                applyCustomCSS();
+            }
+            updateCSSPresetSelect();
+
+            const iconPreview = document.getElementById('icon-preview');
+            if (iconPreview && !iconPreview.children.length) {
+                const defaultIcons = [
+                    'https://img.heliar.top/file/1780827971214_IMG_9513.jpeg',
+                    'https://img.heliar.top/file/1780829322476_IMG_9514.jpeg',
+                    'https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEV4rVqOTypArdsjUADzH66g1ijMDmgZQACRykAAqOTyVXI17C0F_IaSDwE.jpeg',
+                    'https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEV6H1qOgyRWXvSSoJuBP4Bqhfw0fSVJAACLyEAAvQD0VWnEx-Q3iJIIjwE.jpeg'
+                ];
+                defaultIcons.forEach(url => {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.className = 'w-10 h-10 rounded-lg shadow';
+                    img.alt = '默认图标';
+                    iconPreview.appendChild(img);
+                });
+            }
+        }
+
+        // ==================== 数据备份与恢复 ====================
+        function exportData() {
+            const data = {
+                version: '1.0',
+                timestamp: new Date().toISOString(),
+                // 所有localStorage数据
+                wechat_data: localStorage.getItem('wechat_data'),
+                api_config: localStorage.getItem('api_config'),
+                api_presets: localStorage.getItem('api_presets'),
+                customWallpaper: localStorage.getItem('customWallpaper'),
+                customIcon: localStorage.getItem('customIcon'),
+                customCSS: localStorage.getItem('customCSS'),
+                cssPresets: localStorage.getItem('cssPresets')
+            };
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `backup_${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            document.getElementById('backup-status').textContent = '✅ 数据导出成功';
+            setTimeout(() => { document.getElementById('backup-status').textContent = ''; }, 3000);
+            showToast('数据已导出');
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    // 检查版本
+                    if (!data.wechat_data && !data.api_config) {
+                        showToast('无效的备份文件');
+                        return;
+                    }
+                    // 确认导入
+                    if (!confirm('导入将覆盖当前所有数据，确定继续吗？')) {
+                        document.getElementById('import-file').value = '';
+                        return;
+                    }
+                    // 恢复所有数据
+                    if (data.wechat_data) localStorage.setItem('wechat_data', data.wechat_data);
+                    if (data.api_config) localStorage.setItem('api_config', data.api_config);
+                    if (data.api_presets) localStorage.setItem('api_presets', data.api_presets);
+                    if (data.customWallpaper) localStorage.setItem('customWallpaper', data.customWallpaper);
+                    if (data.customIcon) localStorage.setItem('customIcon', data.customIcon);
+                    if (data.customCSS) localStorage.setItem('customCSS', data.customCSS);
+                    if (data.cssPresets) localStorage.setItem('cssPresets', data.cssPresets);
+                    document.getElementById('backup-status').textContent = '✅ 数据恢复成功，页面即将刷新...';
+                    showToast('导入成功，刷新页面生效');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } catch (err) {
+                    showToast('导入失败: ' + err.message);
+                    document.getElementById('backup-status').textContent = '❌ 导入失败';
+                }
+                document.getElementById('import-file').value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        // ==================== 数据持久化 ====================
+        function saveWechatData() {
+            const data = {
+                contacts: contacts,
+                chats: chats,
+                moments: moments,
+                user: user,
+                masks: masks,
+                wallet: wallet,
+                orders: orders
+            };
+            localStorage.setItem('wechat_data', JSON.stringify(data));
+        }
+
+        function loadWechatData() {
+            const savedData = localStorage.getItem('wechat_data');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                contacts = data.contacts || [];
+                chats = data.chats || {};
+                moments = data.moments || [];
+                user = data.user || user;
+                masks = data.masks || [];
+                wallet = data.wallet || wallet;
+                orders = data.orders || [];
+            }
+        }
+
+        // ==================== UI更新 ====================
+        function updateUI() {
+            renderChatList();
+            renderContactsList();
+            renderMoments();
+            document.getElementById('user-name').textContent = user.name;
+            document.getElementById('user-avatar').src = user.avatar;
+        }
+
+        function renderChatList() {
+            const container = document.getElementById('chat-list');
+            container.innerHTML = '';
+            const chatContacts = contacts.filter(contact =>
+                chats[contact.id] && chats[contact.id].length > 0
+            );
+            chatContacts.sort((a, b) => {
+                const lastA = chats[a.id][chats[a.id].length - 1]?.timestamp || 0;
+                const lastB = chats[b.id][chats[b.id].length - 1]?.timestamp || 0;
+                return new Date(lastB) - new Date(lastA);
+            });
+            chatContacts.forEach(contact => {
+                const lastMessage = chats[contact.id][chats[contact.id].length - 1];
+                const chatItem = document.createElement('div');
+                chatItem.className = 'chat-item';
+                chatItem.innerHTML = `
+                    <img src="${contact.avatar}" alt="${contact.name}" class="chat-avatar">
+                    <div class="chat-info">
+                        <div class="chat-name">${contact.name}</div>
+                        <div class="chat-last-message">${lastMessage.content}</div>
+                    </div>
+                `;
+                chatItem.onclick = () => openChat(contact.id);
+                container.appendChild(chatItem);
+            });
+            if (chatContacts.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-8">暂无聊天记录</p>';
+            }
+        }
+
+        function renderContactsList() {
+            const container = document.getElementById('contacts-list');
+            container.innerHTML = '';
+            contacts.forEach(contact => {
+                const contactItem = document.createElement('div');
+                contactItem.className = 'contact-item';
+                contactItem.innerHTML = `
+                    <img src="${contact.avatar}" alt="${contact.name}" class="contact-avatar">
+                    <span class="contact-name">${contact.name}</span>
+                    <span class="contact-edit" onclick="editContact('${contact.id}')">修改</span>
+                `;
+                contactItem.onclick = () => openChat(contact.id);
+                container.appendChild(contactItem);
+            });
+            if (contacts.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-4">暂无联系人，点击上方按钮添加</p>';
+            }
+        }
+    </script>
+</body>
+</html>
